@@ -14,7 +14,7 @@ install.packages("devtools")
 > Install the `snreg` package from GitHub. In this code, you are installing the `snreg` package created by `OlegBadunenko`.
 ```r
 library(devtools)
-install_github("Displayr/flipPlots")
+install_github("OlegBadunenko/snreg")
 ```
 
 ### 3. Load the installed package
