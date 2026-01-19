@@ -21,3 +21,8 @@ install_github("OlegBadunenko/snreg")
 ```r
 library(snreg)
 ```
+
+## 💡 Notes & Tips
+- Works identically across **R**, **RStudio**, **Windows**, **Mac**, and **Linux**.
+- Some GitHub packages may already be available in environments like `npsf`.
+- If installation fails, common causes include missing build tools, incorrect repo names, or network restrictions.
