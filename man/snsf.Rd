@@ -113,12 +113,12 @@ Options \code{ln.var.u} and \code{ln.var.v} can be used if multiplicative hetero
 
 \references{
 
-: @@@ (20@@), @title@. \emph{ @Journal@ }, \bold{@}(@), @−@. DOI: @@@
+Badunenko & Henderson (2023), Production analysis with asymmetric noise. \emph{Journal of Productivity Analysis}, \bold{61}(1), 1−18. DOI: https://doi.org/10.1007/s11123-023-00680-5
 
 }
 
 \author{
- Anonymouso@authors.com
+ oleg.badunenko@brunel.ac.uk
 }
 
 \seealso{
