@@ -118,7 +118,7 @@ Badunenko & Henderson (2023), Production analysis with asymmetric noise. \emph{J
 }
 
 \author{
- oleg.badunenko@brunel.ac.uk
+ Oleg Badunenko <Oleg.Badunenko@brunel.ac.uk>
 }
 
 \seealso{
