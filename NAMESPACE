@@ -1,0 +1,8 @@
+import(Formula)
+export(snreg,lm.mle,snsf,su,TOwen,TOwen1)
+useDynLib(snreg)
+S3method("coef","snreg")
+S3method("vcov","snreg")
+S3method("residuals","snreg")
+S3method("summary", "snreg" )
+S3method("print","summary.snreg" )
