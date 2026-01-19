@@ -2,6 +2,11 @@
 
 Repository for the R package `snreg`.
 
+R commands `snreg` and `snsf` estimate models with skew-normal errors written and maintained by Oleg Badunenko (<oleg.badunenko@brunel.ac.uk>). The details are discussed in
+
+Badunenko, O., & Henderson, D. J. (2023). Production analysis with asymmetric noise. Journal of Productivity Analysis, 61(1), 1–18. [DOI
+<img src="man/figures/doi.png"  width="12" height="12">](https://doi.org/10.1007/s11123-023-00680-5)  
+
 # 📦 Installing `snreg` R Package from GitHub
 
 ### 1. Install the `devtools` package
