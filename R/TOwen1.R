@@ -5,8 +5,7 @@
 #'
 #' @description
 #' \code{TOwen1} computes an Owen's \eqn{T}-function variant (or a related
-#' special function) for vectors \code{h} and \code{a} by delegating to a compiled
-#' C routine named \code{"TOwen1"}. Non-finite inputs in \code{h} or \code{a}
+#' special function) for vectors \code{h} and \code{a} based on the \code{tha} function in \url{https://people.sc.fsu.edu/~jburkardt/c_src/owen/owen.html}. Non-finite inputs in \code{h} or \code{a}
 #' yield \code{NA} at the corresponding positions.
 #'
 #' @details
@@ -14,31 +13,6 @@
 #' \preformatted{
 #'   void TOwen1(int *n, double *h, double *a, double *out, int *threads)
 #' }
-#' The C function is expected to fill \code{out[0..(*n-1)]} with results for
-#' each pair \code{(h[i], a[i])}. The wrapper:
-#' \itemize{
-#'   \item Recycles \code{a} to match \code{length(h)} (standard R behavior).
-#'   \item Computes values only for finite pairs; non-finite entries become \code{NA}.
-#'   \item Forwards a \code{threads} hint to the C implementation.
-#' }
-#'
-#' @section Linking to the C routine:
-#' Ensure the symbol \code{"TOwen1"} is available from your package's shared
-#' object. With Roxygen2, include (once in your package):
-#' \preformatted{
-#' #' @useDynLib yourpkg, .registration = TRUE
-#' NULL
-#' }
-#' and register the routine in \code{src/init.c}. If you are not using explicit
-#' registration, \code{@useDynLib yourpkg} (without \code{.registration = TRUE})
-#' will still allow \code{.C("TOwen1", ...)} provided the symbol is exported.
-#'
-#' @param h
-#' numeric vector of \eqn{h} arguments.
-#'
-#' @param a
-#' numeric vector of \eqn{a} arguments. Must be either the same length as \code{h}
-#' or of length 1 (it will be recycled to match \code{h}).
 #'
 #' @param threads
 #' integer. Number of threads to request from the C implementation (if supported).
@@ -51,7 +25,9 @@
 #'
 #' @examples
 #' \dontrun{
-#'   # Requires compiled C routine "TOwen1":
+#'   library(snreg)
+#' 
+#'   # Basic usage. Vectorized 'a':
 #'   h <- c(-1, 0, 1, 2)
 #'   a <- 0.3
 #'   TOwen1(h, a)

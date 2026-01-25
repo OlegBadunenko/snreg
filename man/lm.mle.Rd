@@ -9,16 +9,14 @@ lm.mle(
   data,
   subset,
   ln.var.v = NULL,
-  technique = c("nr"),
-  vcetype = c("aim"),
+  technique = c("bfgs"),
   lmtol = 1e-05,
   reltol = 1e-12,
   maxit = 199,
-  report = 1,
-  trace = 1,
+  optim.report = 1,
+  optim.trace = 10,
   print.level = 3,
   digits = 4,
-  threads = 8,
   only.data = FALSE,
   ...
 )
@@ -40,14 +38,10 @@ the error variance is modeled as \eqn{\log(\sigma_i^2) = w_i^\top \gamma_v}.
 If \code{NULL}, the variance is homoskedastic.}
 
 \item{technique}{character vector specifying the preferred optimization routine(s) in order of
-preference. Recognized keywords (for future implementation) include \code{"nr"}
-(Newton–Raphson), \code{"bhhh"}, \code{"nm"} (Nelder–Mead), \code{"bfgs"},
-and \code{"cg"}. Default is \code{"nr"}. This scaffold records but does not
+preference. Recognized keywords (for future implementation) include \code{"bfgs"}
+\code{"bhhh"}, \code{"nm"} (Nelder–Mead), \code{"bfgs"},
+and \code{"cg"}. Default is \code{"bfgs"}. This scaffold records but does not
 execute the chosen routine.}
-
-\item{vcetype}{character specifying the variance–covariance estimator type:
-\code{"aim"} for (approximate) information matrix or \code{"opg"} for the outer
-product of gradients. Default is \code{"aim"} (recorded; not yet computed here).}
 
 \item{lmtol}{numeric. Convergence tolerance based on scaled gradient (when applicable).
 Default \code{1e-5}.}
@@ -57,15 +51,13 @@ Default \code{1e-12}.}
 
 \item{maxit}{integer. Maximum number of iterations for the optimizer. Default \code{199}.}
 
-\item{report}{integer. Verbosity level for reporting progress (if implemented). Default \code{1}.}
+\item{optim.report}{integer. Verbosity level for reporting progress (if implemented). Default \code{1}.}
 
-\item{trace}{integer. Trace level for optimization (if implemented). Default \code{1}.}
+\item{optim.trace}{integer. Trace level for optimization (if implemented). Default \code{1}.}
 
 \item{print.level}{integer. Printing level for summaries. Default \code{3}.}
 
 \item{digits}{integer. Number of digits for printing. Default \code{4}.}
-
-\item{threads}{integer. Number of threads (placeholder for parallel implementations). Default \code{8}.}
 
 \item{only.data}{logical. If \code{TRUE}, returns only constructed data/matrices without
 estimation. Default \code{FALSE}.}
@@ -73,17 +65,27 @@ estimation. Default \code{FALSE}.}
 \item{...}{additional arguments reserved for future methods (e.g., bounds, penalties).}
 }
 \value{
-A list of class \code{"lm.mle"} containing:
+A list of class \code{"snreg"} containing (and extending) the fields
+returned by \code{\link[stats]{optim}}:
 \itemize{
-  \item{\code{call}}{ — matched call.}
-  \item{\code{terms}}{ — model terms.}
-  \item{\code{model}}{ — list with constructed components: \code{y}, \code{X}, \code{Zv}.}
-  \item{\code{coef}}{ — named numeric vector of parameter estimates (placeholder).}
-  \item{\code{vcov}}{ — variance–covariance matrix (placeholder).}
-  \item{\code{loglik}}{ — log-likelihood at the solution (placeholder).}
-  \item{\code{esample}}{ — logical vector indicating the estimation sample.}
-  \item{\code{controls}}{ — list of control parameters and settings.}
+  \item{\code{par}}{ — numeric vector of the MLE parameter estimates.}
+  \item{\code{value}}{ — numeric scalar: maximized log-likelihood value.}
+  \item{\code{ll}}{ — numeric scalar: maximized log-likelihood value.}
+  \item{\code{counts}, \code{convergence}, \code{message}}{ — standard \code{optim} outputs.}
+  \item{\code{hessian}}{ — the observed Hessian at the solution (as returned by \code{optim(hessian=TRUE)}).}
+
+  \item{\code{coef}}{ — named numeric vector equal to \code{par} (estimates).}
+  \item{\code{vcov}}{ — variance–covariance matrix, computed as \code{solve(-hessian)}.}
+  \item{\code{sds}}{ — standard errors, \code{sqrt(diag(vcov))}.}
+  \item{\code{ctab}}{ — coefficient table with columns:
+    \code{Estimate}, \code{Std.Err}, \code{Z value}, \code{Pr(>z)}.}
+
+  \item{\code{esample}}{ — logical vector indicating the observations used in estimation.}
+  \item{\code{n}}{ — scalar, number of observations in the estimation sample.}
 }
+
+The object inherits the default
+\code{optim} components and is assigned class \code{"snreg"}.
 }
 \description{
 \code{lm.mle} fits a linear regression model by maximum likelihood, allowing
@@ -100,7 +102,7 @@ When \code{ln.var.v} is supplied, the variance follows
 \deqn{\log(\sigma_i^2) = w_i^\top \gamma_v,}
 otherwise \eqn{\sigma_i^2 = \sigma^2} is constant (homoskedastic).
 
-This scaffold:
+This function:
 \itemize{
   \item Builds the model frame and \code{X}, \code{y}.
   \item Builds \code{Zv} for the log-variance index when \code{ln.var.v} is provided.
@@ -111,27 +113,44 @@ Insert your MLE engine to estimate \eqn{\beta}, and (optionally) \eqn{\sigma^2} 
 }
 \examples{
 \dontrun{
-  set.seed(42)
-  n  <- 300
-  x1 <- rnorm(n); x2 <- runif(n)
-  y  <- 1 + 2*x1 - 1.5*x2 + rnorm(n, sd = 0.7)
-  df <- data.frame(y, x1, x2, z1 = rnorm(n))
 
-  # Homoskedastic MLE scaffold
-  fit0 <- lm.mle(y ~ x1 + x2, data = df)
-  str(fit0)
+library(snreg)
 
-  # Heteroskedastic variance via log-linear index
-  fit1 <- lm.mle(
-    y ~ x1 + x2, data = df,
-    ln.var.v = ~ z1,
-    technique = c("nr"), vcetype = "aim"
-  )
-  str(fit1)
+data("banks07")
+head(banks07)
 
-  # Design matrices only (no estimation)
-  mats <- lm.mle(y ~ x1 + x2, data = df, ln.var.v = ~ z1, only.data = TRUE)
-  names(mats$model)
+# Translog cost function specification
+spe.tl <- log(TC) ~ (log(Y1) + log(Y2) + log(W1) + log(W2))^2 +
+  I(0.5 * log(Y1)^2) + I(0.5 * log(Y2)^2) +
+  I(0.5 * log(W1)^2) + I(0.5 * log(W2)^2)
+
+# -------------------------------------------------------------
+# Specification 1: homoskedastic noise (ln.var.v = NULL)
+# -------------------------------------------------------------
+formSV <- NULL
+
+m1 <- lm.mle(
+  formula   = spe.tl,
+  data      = banks07,
+  ln.var.v  = formSV
+)
+
+coef(m1)
+
+
+# -------------------------------------------------------------
+# Specification 2: heteroskedastic noise (variance depends on TA)
+# -------------------------------------------------------------
+formSV <- ~ log(TA)
+
+m2 <- lm.mle(
+  formula   = spe.tl,
+  data      = banks07,
+  ln.var.v  = formSV
+)
+
+coef(m2)
+
 }
 
 }

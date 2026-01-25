@@ -8,13 +8,13 @@ snsf(
   formula,
   data,
   subset,
-  distribution,
+  distribution = "e",
   prod = TRUE,
   start.val = NULL,
   init.sk = NULL,
   ln.var.u = NULL,
   ln.var.v = NULL,
-  v.skew = NULL,
+  skew.v = NULL,
   mean.u = NULL,
   technique = c("nr"),
   vcetype = c("aim"),
@@ -44,8 +44,8 @@ If not found in \code{data}, variables are taken from \code{environment(formula)
 \item{subset}{an optional logical or numeric vector specifying a subset of observations
 for which the model is estimated and efficiencies are computed.}
 
-\item{distribution}{character scalar specifying the distribution of the inefficiency term:
-\code{"h"} (half-normal), \code{"t"} (truncated normal), or \code{"e"} (exponential).}
+\item{distribution}{character scalar specifying the distribution of the inefficiency term: default \code{"e"} (exponential).
+\code{"h"} (half-normal) and \code{"t"} (truncated normal) to be implemented.}
 
 \item{prod}{logical. If \code{TRUE}, estimates correspond to a stochastic \emph{production}
 frontier and technical efficiencies are returned; if \code{FALSE}, estimates
@@ -57,24 +57,24 @@ Default is \code{TRUE}.}
 \item{init.sk}{numeric. Initial value for the skewness parameter of the noise component;
 default is \code{0.5}.}
 
-\item{ln.var.u}{optional one-sided formula; e.g. \code{ln.var.u ~ z3 + z4}. Specifies exogenous
+\item{ln.var.u}{optional one-sided formula; e.g. \code{ln.var.u = ~ z3 + z4}. Specifies exogenous
 variables entering the (log) variance of the inefficiency component. If
 \code{NULL}, the inefficiency variance is homoskedastic, i.e.,
 \eqn{\sigma_{u0}^2 = \exp(\gamma_{u0}[0])}.}
 
-\item{ln.var.v}{optional one-sided formula; e.g. \code{ln.var.v ~ z1 + z2}. Specifies exogenous
+\item{ln.var.v}{optional one-sided formula; e.g. \code{ln.var.v = ~ z1 + z2}. Specifies exogenous
 variables entering the (log) variance of the random noise component. If
 \code{NULL}, the noise variance is homoskedastic, i.e.,
 \eqn{\sigma_{v0}^2 = \exp(\gamma_{v0}[0])}.}
 
-\item{v.skew}{optional one-sided formula; e.g. \code{v.skew ~ z5 + z6}. Allows the skewness
+\item{skew.v}{optional one-sided formula; e.g. \code{skew.v = ~ z5 + z6}. Allows the skewness
 of the noise to depend linearly on exogenous variables. If \code{NULL}, the
 skewness is constant across units.}
 
-\item{mean.u}{optional one-sided formula; e.g. \code{mean.u ~ z7 + z8}. Specifies whether the
+\item{mean.u}{optional one-sided formula; e.g. \code{mean.u = ~ z7 + z8}. Specifies whether the
 mean of the pre-truncated normal distribution of the inefficiency term is a
 linear function of exogenous variables. In cross-sectional models, used only
-when \code{distribution = "t"}. If \code{NULL}, the mean is constant across units.}
+when \code{distribution = "t"}. If \code{NULL}, the mean is constant across units. To be implemented.}
 
 \item{optim.report}{integer. Verbosity level for reporting during optimization (if implemented).
 Default is \code{1}.}
@@ -105,34 +105,54 @@ efficiencies. Default is \code{3}.}
 \code{FALSE}, an internal routine (if provided) would be used. Default is \code{FALSE}.}
 
 \item{optim.method}{character. Method passed to \code{stats::optim} when \code{optim = TRUE}.
-Default is \code{"Nelder-Mead"}.}
+Default is \code{"bfgs"}.}
 
 \item{optim.reltol}{numeric. Relative tolerance specifically for \code{optim}; default \code{1e-8}.}
 }
 \value{
-A list of class \code{"snsf"} with the following elements:
-\itemize{
-  \item{\code{coef}}{ — named numeric vector of ML parameter estimates.}
-  \item{\code{vcov}}{ — estimated covariance matrix of the ML estimator.}
-  \item{\code{loglik}}{ — numeric value of the log-likelihood at the ML estimates.}
-  \item{\code{efficiencies}}{ — \code{data.frame} with point estimates of unit-specific
-    technical or cost efficiencies: \eqn{\exp(-E(u|e))} (Jondrow et al., 1982),
-    \eqn{E(\exp(-u)\,|\,e)} (Battese & Coelli, 1988), and
-    \eqn{\exp(-M(u|e))}, where \eqn{M(u|e)} is the mode of the conditional
-    distribution of the inefficiency term; also includes estimated lower and
-    upper bounds of \eqn{(1-\alpha)\times 100\%} two-sided prediction intervals.}
-  \item{\code{su}}{ — matrix of estimated unit-specific variances of the
-    inefficiency term; returned if \code{ln.var.u} is not \code{NULL}.}
-  \item{\code{sv}}{ — matrix of estimated unit-specific variances of the
-    random noise component; returned if \code{ln.var.v} is not \code{NULL}.}
-  \item{\code{mu}}{ — matrix of estimated unit-specific means of the
-    pre-truncated normal distribution of the inefficiency term; returned if
-    \code{mean.u} is not \code{NULL}.}
-  \item{\code{esample}}{ — logical vector indicating which observations in
-    \code{data} are in the estimation subsample.}
-  \item{\code{call}}{ — the matched call.}
-  \item{\code{terms}}{ — the model terms.}
+An object of class \code{"snreg"} with maximum-likelihood estimates and diagnostics:
+
+\describe{
+
+  \item{\code{par}}{Numeric vector of ML parameter estimates at the optimum.}
+  \item{\code{coef}}{Named numeric vector equal to \code{par}.}
+  \item{\code{vcov}}{Variance–covariance matrix of the estimates.}
+  \item{\code{sds}}{Standard errors, \code{sqrt(diag(vcov))}.}
+  \item{\code{ctab}}{Coefficient table with columns
+        \code{Coef.}, \code{SE}, \code{z}, \code{P>|z|}.}
+
+  \item{\code{ll}}{Maximized log-likelihood value.}
+  \item{\code{hessian}}{(When computed) Observed Hessian or OPG used to form \code{vcov}.}
+  \item{\code{value}}{(Optim-only, before aliasing) Objective value from \code{optim}.}
+  \item{\code{counts}}{(Optim-only) Iteration and evaluation counts from \code{optim}.}
+  \item{\code{convergence}}{Convergence code).}
+  \item{\code{message}}{(Optim-only) Message returned by \code{optim}, if any.}
+  \item{\code{gradient}}{(NR-only) Gradient at the solution.}
+  \item{\code{gg}}{(NR-only) Gradient-related diagnostic.}
+  \item{\code{gHg}}{(NR-only) Newton-step diagnostic.}
+  \item{\code{theta_rel_ch}}{(NR-only) Relative parameter change metric across iterations.}
+
+  \item{\code{resid}}{Regression residuals.}
+  \item{\code{RSS}}{Residual sum of squares \code{crossprod(resid)}.}
+  \item{\code{shat2}}{Residual variance estimate \code{var(resid)}.}
+  \item{\code{shat}}{Residual standard deviation \code{sqrt(shat2)}.}
+  \item{\code{aic}}{Akaike Information Criterion.}
+  \item{\code{bic}}{Bayesian Information Criterion.}
+  \item{\code{Mallows}}{Mallows' \eqn{C_p}-like statistic.}
+
+  \item{\code{u}}{Estimated inefficiency term (vector). Returned for models with
+        an inefficiency component (e.g., exponential).}
+  \item{\code{eff}}{Efficiency scores \code{exp(-u)} (technical or cost, depending on \code{prod}).}
+  \item{\code{sv}}{Estimated (possibly unit-specific) standard deviation of the noise term.}
+  \item{\code{su}}{Estimated (possibly unit-specific) standard deviation or scale of the
+        inefficiency term. For exponential models.}
+  \item{\code{skewness}}{Estimated skewness index (e.g., from the skewness equation).}
+
+  \item{\code{esample}}{Logical vector marking observations used in estimation.}
+  \item{\code{n}}{Number of observations used.}
 }
+
+The returned object has class \code{"snreg"}.
 }
 \description{
 \code{snsf} performs maximum likelihood estimation of the parameters and
@@ -155,67 +175,55 @@ variances can be modeled as exponential functions of exogenous variables
 }
 \examples{
 \dontrun{
-  library(snsf)
 
-  data("banks07")
-  head(banks07)
+library(snreg)
 
-  myprod <- FALSE
+data("banks07")
+head(banks07)
 
-  spe.tl <- log(TC) ~ (log(Y1) + log(Y2) + log(W1) + log(W2))^2 +
-    I(0.5*log(Y1)^2) + I(0.5*log(Y2)^2) + I(0.5*log(W1)^2) + I(0.5*log(W2)^2)
+myprod <- FALSE
 
-  # Specification 1
-  formSV <- NULL
-  formSK <- NULL
-  formSU <- NULL
+# Translog cost function
+spe.tl <- log(TC) ~ (log(Y1) + log(Y2) + log(W1) + log(W2))^2 +
+  I(0.5 * log(Y1)^2) + I(0.5 * log(Y2)^2) +
+  I(0.5 * log(W1)^2) + I(0.5 * log(W2)^2)
 
-  # Normal-Exponential model
-  m1.n <- npsf::sf(
-    formula = spe.tl, data = banks06_07, subset = year == 2007, prod = myprod,
-    distribution = "e", ln.var.u.0i = formSU, ln.var.v.0i = formSV
-  )
 
-  # Skewnormal-Exponential model
-  m1.sn <- snsf::snsf(
-    formula = spe.tl, data = banks06_07, subset = year == 2007, prod = myprod,
-    ln.var.u = formSU, ln.var.v = formSV, v.skew = formSK
-  )
+# -------------------------------------------------------------
+# Specification 1: homoskedastic & symmetric
+# -------------------------------------------------------------
+formSV <- NULL   # variance equation
+formSK <- NULL   # skewness equation
+formSU <- NULL   # inefficiency equation (unused here)
 
-  # Specification 2
-  formSK <- ~ ER
+m1 <- snsf(
+  formula  = spe.tl,
+  data     = banks07,
+  prod     = myprod,
+  ln.var.v = formSV,
+  skew.v   = formSK
+)
 
-  # Normal-Exponential model
-  m2.n <- npsf::sf(
-    formula = spe.tl, data = banks06_07, subset = year <= 2007, prod = myprod,
-    distribution = "e", ln.var.u.0i = formSU, ln.var.v.0i = formSV,
-    cost.eff.less.one = TRUE
-  )
+coef(m1)
 
-  # Skewnormal-Exponential model
-  m2.sn <- snsf::snsf(
-    formula = spe.tl, data = banks06_07, subset = year <= 2007, prod = myprod,
-    ln.var.u = formSU, ln.var.v = formSV, v.skew = formSK,
-    cost.eff.less.one = TRUE
-  )
 
-  # Specification 3
-  formSV <- ~ log(TA)
-  formSK <- ~ ER
-  formSU <- ~ LA + ER
+# -------------------------------------------------------------
+# Specification 2: heteroskedastic + skewed noise
+# -------------------------------------------------------------
+formSV <- ~ log(TA)      # heteroskedastic variance
+formSK <- ~ ER           # skewness driver
+formSU <- ~ LA + ER      # inefficiency (not used by snsf if prod=FALSE)
 
-  # Normal-Exponential model
-  m3.n <- npsf::sf(
-    formula = spe.tl, data = banks06_07, subset = year == 2007, prod = myprod,
-    distribution = "e", ln.var.u.0i = formSU, ln.var.v.0i = formSV,
-    cost.eff.less.one = TRUE
-  )
+m2 <- snsf(
+  formula  = spe.tl,
+  data     = banks07,
+  prod     = myprod,
+  ln.var.v = formSV,
+  skew.v   = formSK
+)
 
-  # Skewnormal-Exponential model
-  m3.sn <- snsf::snsf(
-    formula = spe.tl, data = banks06_07, subset = year == 2007, prod = myprod,
-    ln.var.u = formSU, ln.var.v = formSV, v.skew = formSK
-  )
+coef(m2)
+
 }
 
 }
@@ -223,7 +231,7 @@ variances can be modeled as exponential functions of exogenous variables
 Badunenko, O., & Henderson, D. J. (2023).
 \emph{Production analysis with asymmetric noise}.
 Journal of Productivity Analysis, \bold{61}(1), 1–18.
-\doi{10.1007/s11123-023-00680-5}
+https://doi.org/10.1007/s11123-023-00680-5
 
 Caudill, S. B., Ford, J. M., & Gropper, D. M. (1995).
 \emph{Frontier estimation and firm-specific inefficiency measures in the presence of heteroskedasticity}.

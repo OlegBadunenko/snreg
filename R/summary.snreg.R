@@ -16,19 +16,14 @@
 #' additional arguments (currently not used).
 #'
 #' @details
+#' This method expects a fitted \code{"snreg"} object.
+#' 
 #' \code{summary.snreg} does not modify the contents of the object; it only
 #' updates the class attribute to \code{"summary.snreg"}. The corresponding
 #' print method (\code{\link{print.summary.snreg}}) is responsible for
 #' formatting and displaying estimation details, such as convergence criteria,
 #' log-likelihood, coefficient tables, and (if present) heteroskedastic and
-#' skewness components. The print method shown below assumes the presence of
-#' some internal helper functions:
-#' \itemize{
-#'   \item \code{.timing(time_object, prefix)} — to print elapsed time,
-#'   \item \code{.printgtresfhet(res, digits, Kb, Kv0, Ku0, Kvi, Kui, na.print, max.name.length)} — to format coefficient blocks,
-#'   \item \code{.su(x, ...)} — to summarize vectors/matrices, used for efficiency summaries.
-#' }
-#' Ensure these are defined in your package if you wish to use this print method unchanged.
+#' skewness components.
 #'
 #' @return
 #' An object of class \code{"summary.snreg"}, identical to the input \code{obj}
@@ -39,7 +34,6 @@
 #'
 #' @examples
 #' \dontrun{
-#'   # Example (assuming 'banks07' is available and snreg is fitted accordingly)
 #'   # m <- snreg(TC ~ Y1 + Y2, data = banks07)
 #'   # s <- summary(m)
 #'   # print(s)
@@ -73,17 +67,8 @@ summary.snreg <- function( obj, ...) {
 #' additional arguments (currently unused).
 #'
 #' @details
-#' This method expects the input object \code{obj} to contain fields produced by
-#' your estimation routine, including (but not limited to):
-#' \code{results}, \code{gHg}, \code{lmtol}, \code{LM}, \code{bhhh}, \code{gg},
-#' \code{esttime}, \code{ll}, \code{prod}, \code{toinclude}, \code{Kv0}, \code{Ku0},
-#' \code{Kvi}, \code{Kui}, \code{Kb}, \code{nt}, \code{n}, \code{dat.descr},
-#' and efficiency objects such as \code{te_i0}, \code{te_it}, \code{te_over},
-#' \code{ce_i0}, \code{ce_it}, \code{ce_over}, as well as marginal effects summaries
-#' \code{me_i0}, \code{me_it} and their elasticities.
 #'
-#' It also uses internal helpers \code{.timing}, \code{.printgtresfhet},
-#' and \code{.su}. Make sure those are available in your package namespace.
+#' This method expects a fitted \code{"snreg"} object.
 #'
 #' @return
 #' The input \code{obj} is returned (invisibly) after printing.

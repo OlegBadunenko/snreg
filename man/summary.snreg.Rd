@@ -25,23 +25,17 @@ display results in a structured format.
 Summary Method for snreg Objects
 
 
+This method expects a fitted \code{"snreg"} object.
+
 \code{summary.snreg} does not modify the contents of the object; it only
 updates the class attribute to \code{"summary.snreg"}. The corresponding
 print method (\code{\link{print.summary.snreg}}) is responsible for
 formatting and displaying estimation details, such as convergence criteria,
 log-likelihood, coefficient tables, and (if present) heteroskedastic and
-skewness components. The print method shown below assumes the presence of
-some internal helper functions:
-\itemize{
-  \item \code{.timing(time_object, prefix)} — to print elapsed time,
-  \item \code{.printgtresfhet(res, digits, Kb, Kv0, Ku0, Kvi, Kui, na.print, max.name.length)} — to format coefficient blocks,
-  \item \code{.su(x, ...)} — to summarize vectors/matrices, used for efficiency summaries.
-}
-Ensure these are defined in your package if you wish to use this print method unchanged.
+skewness components.
 }
 \examples{
 \dontrun{
-  # Example (assuming 'banks07' is available and snreg is fitted accordingly)
   # m <- snreg(TC ~ Y1 + Y2, data = banks07)
   # s <- summary(m)
   # print(s)

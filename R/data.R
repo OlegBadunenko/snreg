@@ -37,66 +37,71 @@
 #' It is intended to illustrate the usage of functions from this package
 #' (e.g. stochastic frontier models with skew-normal noise).
 #'
+
 #' @examples
 #' \dontrun{
 #'
-#' data(banks07)
-#' head(banks07)
+#' ## ------------------------------------------------------------------
+#' ## Construct sample panel dataset (banks00_07)
+#' ## ------------------------------------------------------------------
 #'
-#' dat <- banks07
-#' dat$mysample <- TRUE
+#' # Download data from the link in "Source"
+#' banks00_07 <- read.delim("2b_QLH.txt")
 #'
-#' # Example: simple translog cost function
-#' spe.tl <-
-#'   log(TC) ~ (log(Y1) + log(Y2) + log(W1) + log(W2))^2 +
-#'   I(0.5 * log(Y1)^2) + I(0.5 * log(Y2)^2) +
-#'   I(0.5 * log(W1)^2) + I(0.5 * log(W2)^2)
+#' # rename 'entity' to 'id'
+#' colnames(banks00_07)[colnames(banks00_07) == "entity"] <- "id"
 #'
-#' # Fit a normal-noise MLE model via snreg::lm.mle
-#' m.N0 <- snreg::lm.mle(
-#'   formula = spe.tl, data = dat, subset = mysample,
-#'   ln.var.v = NULL, technique = c("bfgs")
-#' )
+#' # keep only years 2000–2007
+#' banks00_07 <- banks00_07[
+#'   banks00_07$year >= 2000 & banks00_07$year <= 2007, ]
 #'
-#' m.N0$value
-#' m.N0$coef
-#' sqrt(diag(m.N0$vcov))
+#' # restrict sample to interquartile range of total assets
+#' q1q3 <- quantile(banks00_07$TA, probs = c(.25, .75))
+#' banks00_07 <- banks00_07[
+#'   banks00_07$TA >= q1q3[1] & banks00_07$TA <= q1q3[2], ]
 #'
-#' # Fit a skew-normal noise model
-#' formSK <- NULL
-#' formSV <- NULL
+#' # generate required variables
+#' banks00_07$TC <- banks00_07$TOC
+#' banks00_07$ER <- banks00_07$Z  / banks00_07$TA   # Equity ratio
+#' banks00_07$LA <- banks00_07$Y2 / banks00_07$TA   # Loans-to-assets ratio
 #'
-#' init.sk.grid <- seq(0, 3, 0.07)
-#' init.sk.grid[1] <- 0.01
-#' init.sk.grid <- sort(c(-init.sk.grid, init.sk.grid))
+#' # keep only needed variables
+#' keep.vars <- c("id", "year", "Ti", "TC", "Y1", "Y2", "W1","W2",
+#'                "ER", "LA", "TA", "LLP")
+#' banks00_07 <- banks00_07[, colnames(banks00_07) %in% keep.vars]
 #'
-#' trial <- NULL
-#' for (in.sk in init.sk.grid) {
-#'   m.temp <- snreg::snreg(
-#'     formula = spe.tl, data = dat, subset = mysample,
-#'     start.sk = in.sk, ln.var.v = formSV, skew.v = formSK,
-#'     technique = c("bfgs")
-#'   )
-#'   trial <- rbind(trial, c(in.sk, m.temp$value))
+#' # number of periods per id
+#' t0 <- as.vector( by(banks00_07$id, banks00_07$id,
+#'                     FUN = function(qq) length(qq)) )
+#' banks00_07$Ti <- rep(t0, times = t0)
+#'
+#' # keep if Ti > 4
+#' banks00_07 <- banks00_07[banks00_07$Ti > 4, ]
+#'
+#' # complete observations only
+#' banks00_07 <- banks00_07[complete.cases(banks00_07), ]
+#'
+#' # sample 500 banks at random
+#' set.seed(816376586)
+#' id_names <- unique(banks00_07$id)
+#' ids2choose <- sample(id_names, 500)
+#' banks00_07 <- banks00_07[banks00_07$id %in% ids2choose, ]
+#'
+#' # recompute Ti
+#' t0 <- as.vector( by(banks00_07$id, banks00_07$id,
+#'                     FUN = function(qq) length(qq)) )
+#' banks00_07$Ti <- rep(t0, times = t0)
+#' banks00_07 <- banks00_07[banks00_07$Ti > 4, ]
+#'
+#' # sort
+#' banks00_07 <- banks00_07[order(banks00_07$id, banks00_07$year), ]
+#' 
+#' 
+# keep only year 2007
+#' banks07 <- banks00_07[banks00_07$year == 2007, ]
+#'
 #' }
-#'
-#' best.sk <- trial[order(trial[, 2]),][nrow(trial), 1]
-#'
-#' m.SN0 <- snreg::snreg(
-#'   formula = spe.tl, data = dat, subset = mysample,
-#'   start.sk = best.sk, ln.var.v = formSV, skew.v = formSK,
-#'   technique = c("nr")
-#' )
-#'
-#' # Fit a stochastic frontier model with exponential inefficiency
-#' m.SF1 <- snreg::snsf(
-#'   formula = spe.tl, data = dat, subset = mysample,
-#'   distribution = "e", prod = FALSE,
-#'   start.sk = -1, ln.var.u = NULL, ln.var.v = NULL, skew.v = NULL,
-#'   technique = c("bfgs")
-#' )
-#'
-#' }
+
 #'
 #' @source
 #' \url{http://qed.econ.queensu.ca/jae/2014-v29.2/restrepo-tobon-kumbhakar/}

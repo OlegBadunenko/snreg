@@ -2321,7 +2321,7 @@ hessian2 <- function(funcg, at, ...){
 #'
 #' @keywords internal
 #' @noRd
-coef_mat_print <- function(coeffs, digits = 4, large = 999) {
+coef.mat.print <- function(coeffs, digits = 4, large = 999) {
   if (!is.matrix(coeffs)) coeffs <- as.matrix(coeffs)
   
   big_or_small <- abs(coeffs[, , drop = FALSE]) > large |

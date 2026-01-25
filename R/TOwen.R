@@ -1,24 +1,18 @@
 
 #' Owen's T Function via C Backend
 #'
-#' @title Compute Owen's T Function (\code{T(h, a)})
+#' @title Compute Owen's T Function \code{T(h, a)}
 #'
 #' @description
-#' \code{TOwen} computes Owen's \eqn{T} function \eqn{T(h, a)} for vectors
-#' \code{h} and \code{a} by delegating to a compiled C routine named
-#' \code{"TOwen"}. Non-finite inputs (in \code{h} or \code{a}) produce \code{NA}
+#' \code{TOwen1} computes an Owen's \eqn{T}-function variant (or a related
+#' special function) for vectors \code{h} and \code{a} based on the \code{t} function in \url{https://people.sc.fsu.edu/~jburkardt/c_src/owen/owen.html}. Non-finite inputs (in \code{h} or \code{a}) produce \code{NA}
 #' at corresponding positions, while finite pairs are computed in C in a
 #' vectorized fashion.
 #'
 #' @details
 #' Owen's \eqn{T} function is commonly defined as
 #' \deqn{T(h, a) \;=\; \frac{1}{2\pi} \int_{0}^{a} \frac{\exp\!\left(-\tfrac{1}{2}h^2 (1+t^2)\right)}{1+t^2} \, dt,}
-#' for real \eqn{h} and \eqn{a}. This implementation assumes you provide a
-#' compiled C routine with the signature:
-#' \preformatted{
-#'   void TOwen(int *n, double *h, double *a, double *out, int *threads)
-#' }
-#' which fills \code{out[0..(*n-1)]} with the corresponding \eqn{T(h_i, a_i)} values.
+#' for real \eqn{h} and \eqn{a}.
 #'
 #' The function accepts vector inputs and:
 #' \itemize{
@@ -44,25 +38,14 @@
 #' The returned object is given class \code{"snreg"} for downstream compatibility
 #' with your package’s print/summary helpers.
 #'
-#' @section Linking to the C routine:
-#' Ensure your package registers the native routine and exposes the symbol
-#' \code{"TOwen"}. With Roxygen2, include (once in your package) a directive such as:
-#' \preformatted{
-#' #' @useDynLib yourpkg, .registration = TRUE
-#' NULL
-#' }
-#' and add the corresponding C entry to your \code{src/} code and \code{NAMESPACE}.
-#' If you use \code{.C()}, each argument must be of the correct C-storage type.
-#' Consider \code{.Call()} for type safety and performance in new code.
-#'
 #' @examples
 #' \dontrun{
-#'   # Basic usage (requires compiled C routine "TOwen" to be available)
+#'   # Basic usage. Vectorized 'a'
 #'   h <- c(-1, 0, 1, 2)
 #'   a <- 0.5
 #'   TOwen(h, a)
 #'
-#'   # Vectorized 'a'; non-finite entries yield NA
+#'   # Vectorized 'a' with non-finite entries; non-finite entries yield NA
 #'   a2 <- c(0.2, NA, 1, Inf)
 #'   TOwen(h, a2)
 #' }

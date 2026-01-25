@@ -27,17 +27,8 @@ for technical/cost efficiencies and marginal effects.
 Print Method for Summary of snreg Objects
 
 
-This method expects the input object \code{obj} to contain fields produced by
-your estimation routine, including (but not limited to):
-\code{results}, \code{gHg}, \code{lmtol}, \code{LM}, \code{bhhh}, \code{gg},
-\code{esttime}, \code{ll}, \code{prod}, \code{toinclude}, \code{Kv0}, \code{Ku0},
-\code{Kvi}, \code{Kui}, \code{Kb}, \code{nt}, \code{n}, \code{dat.descr},
-and efficiency objects such as \code{te_i0}, \code{te_it}, \code{te_over},
-\code{ce_i0}, \code{ce_it}, \code{ce_over}, as well as marginal effects summaries
-\code{me_i0}, \code{me_it} and their elasticities.
 
-It also uses internal helpers \code{.timing}, \code{.printgtresfhet},
-and \code{.su}. Make sure those are available in your package namespace.
+This method expects a fitted \code{"snreg"} object.
 }
 \seealso{
 \code{\link{summary.snreg}}

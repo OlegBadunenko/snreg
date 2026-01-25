@@ -8,7 +8,7 @@ snreg(
   formula,
   data,
   subset,
-  start.sk = NULL,
+  init.sk = NULL,
   ln.var.v = NULL,
   skew.v = NULL,
   start.val = NULL,
@@ -21,7 +21,6 @@ snreg(
   trace = 1,
   print.level = 3,
   digits = 4,
-  threads = 1,
   only.data = FALSE,
   ...
 )
@@ -37,7 +36,7 @@ If not found in \code{data}, variables are taken from \code{environment(formula)
 \item{subset}{an optional logical or numeric vector specifying the subset of observations
 to be used in estimation.}
 
-\item{start.sk}{numeric. Initial value for the (global) skewness parameter of the noise;
+\item{init.sk}{numeric. Initial value for the (global) skewness parameter of the noise;
 can be \code{NULL} if \code{skew.v} is supplied with its own coefficients to initialize.}
 
 \item{ln.var.v}{optional one-sided formula; e.g. \code{ln.var.v ~ z1 + z2}. Specifies
@@ -78,26 +77,46 @@ Default is \code{1}.}
 
 \item{digits}{integer. Number of digits for printing. Default \code{4}.}
 
-\item{threads}{integer. Number of threads (placeholder for parallel implementations).
-Default \code{1}.}
-
 \item{only.data}{logical. If \code{TRUE}, the function returns only the constructed model
 matrices and design sets (no estimation). Default \code{FALSE}.}
 
 \item{...}{additional arguments reserved for future methods (e.g., box constraints).}
 }
 \value{
-An object of class \code{"snreg"} with elements:
-\itemize{
-  \item{\code{call}}{ — matched function call.}
-  \item{\code{terms}}{ — model terms for the main regression.}
-  \item{\code{model}}{ — list with constructed data: \code{y}, \code{X}, \code{Zv}, \code{Zs}.}
-  \item{\code{coef}}{ — named vector of MLEs (placeholder \code{numeric(0)} in scaffold).}
-  \item{\code{vcov}}{ — variance–covariance matrix (placeholder).}
-  \item{\code{loglik}}{ — log-likelihood at the solution (placeholder \code{NA}).}
-  \item{\code{esample}}{ — logical vector indicating the estimation sample.}
-  \item{\code{controls}}{ — list of control parameters and settings.}
+An object of class \code{"snreg"} containing the maximum-likelihood results and,
+depending on the optimization routine, additional diagnostics:
+
+\describe{
+  \item{\code{par}}{Numeric vector of parameter estimates at the optimum.}
+  \item{\code{coef}}{Named numeric vector equal to \code{par}.}
+
+  \item{\code{vcov}}{Variance–covariance matrix of the estimates.}
+  \item{\code{sds}}{Standard errors, computed as \code{sqrt(diag(vcov))}.}
+  \item{\code{ctab}}{Coefficient table with columns:
+        \code{Estimate}, \code{Std.Err}, \code{Z value}, \code{Pr(>z)}.}
+
+  \item{\code{RSS}}{Residual sum of squares.}
+  \item{\code{esample}}{Logical vector indicating which observations were used in estimation.}
+  \item{\code{n}}{Number of observations used in the estimation sample.}
+  \item{\code{skewness}}{Vector of the fitted skewness index.}
+
+  \item{\code{hessian}}{(BFGS only) Observed Hessian at the optimum. If \code{vcetype == "opg"},
+        this is set to the negative outer product of the individual gradients;
+        otherwise a numerical Hessian is computed.}
+  \item{\code{value}}{(BFGS only) Objective value returned by \code{optim}. With
+        \code{control$fnscale = -1}, this equals the maximized log-likelihood.}
+  \item{\code{counts}}{(BFGS only) Number of iterations / function evaluations returned by \code{optim}.}
+  \item{\code{convergence}}{(BFGS only) Convergence code from \code{optim}.}
+  \item{\code{message}}{(BFGS only) Additional \code{optim} message, if any.}
+
+  \item{\code{ll}}{Maximized log-likelihood value.}
+  \item{\code{gradient}}{(NR only) Gradient at the solution.}
+  \item{\code{gg}}{(NR only) Optional gradient-related diagnostic.}
+  \item{\code{gHg}}{(NR only) Optional Newton-step diagnostic.}
+  \item{\code{theta_rel_ch}}{(NR only) Relative parameter change metric across iterations.}
 }
+
+The returned object has class \code{"snreg"}.
 }
 \description{
 \code{snreg} fits a linear regression model where the disturbance term follows
@@ -126,32 +145,49 @@ asymptotic covariance via either AIM or OPG.
 }
 \examples{
 \dontrun{
-  # Simulated usage (replace with real data)
-  set.seed(1)
-  n <- 200
-  x1 <- rnorm(n); x2 <- runif(n)
-  X  <- cbind(1, x1, x2)
-  beta <- c(1, 2, -1)
-  y <- X \%*\% beta + rnorm(n)
-  df <- data.frame(y = as.numeric(y), x1 = x1, x2 = x2,
-                   z1 = rnorm(n), z2 = rnorm(n))
 
-  # Constant variance, constant skewness
-  m0 <- snreg(
-    formula = y ~ x1 + x2, data = df,
-    ln.var.v = NULL, skew.v = NULL,
-    technique = c("nr")
-  )
-  str(m0)
+library(snreg)
 
-  # Heteroskedastic variance and variable skewness
-  m1 <- snreg(
-    formula = y ~ x1 + x2, data = df,
-    ln.var.v = ~ z1 + z2,
-    skew.v   = ~ z1,
-    technique = c("bfgs"), vcetype = "opg"
-  )
-  str(m1)
+data("banks07")
+head(banks07)
+
+# Translog cost function
+spe.tl <- log(TC) ~ (log(Y1) + log(Y2) + log(W1) + log(W2))^2 +
+  I(0.5 * log(Y1)^2) + I(0.5 * log(Y2)^2) +
+  I(0.5 * log(W1)^2) + I(0.5 * log(W2)^2)
+
+
+# -------------------------------------------------------------
+# Specification 1: homoskedastic & symmetric noise
+# -------------------------------------------------------------
+formSV <- NULL     # variance equation
+formSK <- NULL     # skewness equation
+
+m1 <- snreg(
+  formula  = spe.tl,
+  data     = banks07,
+  ln.var.v = formSV,
+  skew.v   = formSK
+)
+
+coef(m1)
+
+
+# -------------------------------------------------------------
+# Specification 2: heteroskedastic + skewed noise
+# -------------------------------------------------------------
+formSV <- ~ log(TA)   # heteroskedasticity in v
+formSK <- ~ ER        # skewness driven by equity ratio
+
+m2 <- snreg(
+  formula  = spe.tl,
+  data     = banks07,
+  ln.var.v = formSV,
+  skew.v   = formSK
+)
+
+coef(m2)
+
 }
 
 }

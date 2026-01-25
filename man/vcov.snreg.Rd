@@ -22,6 +22,8 @@ It returns the model-based variance–covariance matrix stored in the fitted obj
 Variance–Covariance Matrix for snreg Objects
 
 
+This method expects a fitted \code{"snreg"} object.
+
 This method simply returns the \code{vcov} component stored in \code{obj}.
 If your estimator did not compute standard errors (e.g., because estimation
 hasn’t been run yet in a scaffold), this field may be \code{NULL}, and the
@@ -29,7 +31,10 @@ method will error accordingly.
 }
 \examples{
 \dontrun{
-  # m <- snreg(y ~ x1 + x2, data = df)
+  library(snsf)
+
+  data("banks07")
+  head(banks07)
   # V <- vcov(m)
   # diag(V)
 }
