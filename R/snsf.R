@@ -1,26 +1,255 @@
-snsf <- function (
-  formula, data, subset,
-  distribution,
-  prod      = TRUE,
-  start.sk  = NULL,#.5*(2*prod-1),
-  ln.var.u  = NULL,
-  ln.var.v  = NULL,
-  skew.v    = NULL,
-  mean.u    = NULL,
-  start.val = NULL,
-  technique = c('nr'),#,'bhhh','nm', 'bfgs', 'cg'),
-  vcetype   = c('aim'),#, 'opg'), # `approximated information matrix` or `outer product of gradients`
-  lmtol     = 1e-5,  
-  reltol    = 1e-12, 
-  maxit     = 199, 
-  report    = 1,
-  trace     = 1,
-  print.level = 3, 
-  digits    = 4,
-  threads   = 1,
-  only.data = FALSE,
-  ...){
-  
+
+#' Stochastic Frontier Model with a Skew-Normally Distributed Error Term
+#'
+#' @title Stochastic Frontier Model with a Skew-Normally Distributed Error Term
+#'
+#' @description
+#' \code{snsf} performs maximum likelihood estimation of the parameters and
+#' technical or cost efficiencies in a Stochastic Frontier Model with a
+#' skew-normally distributed error term.
+#'
+#' @param formula
+#' an object of class \code{formula} specifying the frontier:
+#' a typical model is \code{y ~ x1 + ...}, where \code{y} is the
+#' log of output (or total cost), and \code{x}'s are inputs (or outputs and
+#' input prices, in logs). See \strong{Details}.
+#'
+#' @param data
+#' an optional \code{data.frame} containing the variables in \code{formula}.
+#' If not found in \code{data}, variables are taken from \code{environment(formula)}.
+#'
+#' @param subset
+#' an optional logical or numeric vector specifying a subset of observations
+#' for which the model is estimated and efficiencies are computed.
+#'
+#' @param prod
+#' logical. If \code{TRUE}, estimates correspond to a stochastic \emph{production}
+#' frontier and technical efficiencies are returned; if \code{FALSE}, estimates
+#' correspond to a stochastic \emph{cost} frontier and cost efficiencies are returned.
+#' Default is \code{TRUE}.
+#'
+#' @param distribution
+#' character scalar specifying the distribution of the inefficiency term:
+#' \code{"h"} (half-normal), \code{"t"} (truncated normal), or \code{"e"} (exponential).
+#'
+#' @param lmtol
+#' numeric. Convergence tolerance based on the scaled gradient (when applicable).
+#' Default is \code{1e-5}.
+#'
+#' @param maxit
+#' numeric. Maximum number of iterations for the optimizer. Default is \code{199}.
+#'
+#' @param reltol
+#' numeric. Relative convergence tolerance used when maximizing the log-likelihood
+#' with \code{optim}. The algorithm stops if it cannot reduce the objective by
+#' a factor of \code{reltol * (abs(val) + reltol)} at a step. Default is
+#' \code{sqrt(.Machine$double.eps)}.
+#'
+#' @param start.val
+#' optional numeric vector of starting values for the optimizer.
+#'
+#' @param init.sk
+#' numeric. Initial value for the skewness parameter of the noise component;
+#' default is \code{0.5}.
+#'
+#' @param ln.var.u
+#' optional one-sided formula; e.g. \code{ln.var.u ~ z3 + z4}. Specifies exogenous
+#' variables entering the (log) variance of the inefficiency component. If
+#' \code{NULL}, the inefficiency variance is homoskedastic, i.e.,
+#' \eqn{\sigma_{u0}^2 = \exp(\gamma_{u0}[0])}.
+#'
+#' @param ln.var.v
+#' optional one-sided formula; e.g. \code{ln.var.v ~ z1 + z2}. Specifies exogenous
+#' variables entering the (log) variance of the random noise component. If
+#' \code{NULL}, the noise variance is homoskedastic, i.e.,
+#' \eqn{\sigma_{v0}^2 = \exp(\gamma_{v0}[0])}.
+#'
+#' @param v.skew
+#' optional one-sided formula; e.g. \code{v.skew ~ z5 + z6}. Allows the skewness
+#' of the noise to depend linearly on exogenous variables. If \code{NULL}, the
+#' skewness is constant across units.
+#'
+#' @param mean.u
+#' optional one-sided formula; e.g. \code{mean.u ~ z7 + z8}. Specifies whether the
+#' mean of the pre-truncated normal distribution of the inefficiency term is a
+#' linear function of exogenous variables. In cross-sectional models, used only
+#' when \code{distribution = "t"}. If \code{NULL}, the mean is constant across units.
+#'
+#' @param optim
+#' logical. If \code{TRUE}, estimation proceeds via \code{stats::optim}; if
+#' \code{FALSE}, an internal routine (if provided) would be used. Default is \code{FALSE}.
+#'
+#' @param optim.method
+#' character. Method passed to \code{stats::optim} when \code{optim = TRUE}.
+#' Default is \code{"Nelder-Mead"}.
+#'
+#' @param optim.report
+#' integer. Verbosity level for reporting during optimization (if implemented).
+#' Default is \code{1}.
+#'
+#' @param optim.trace
+#' integer. Trace level for optimization (if implemented). Default is \code{1}.
+#'
+#' @param optim.reltol
+#' numeric. Relative tolerance specifically for \code{optim}; default \code{1e-8}.
+#'
+#' @param print.level
+#' integer. Printing level: \code{1}—estimation results;
+#' \code{2}—optimization details; \code{3}—summary of (cost/technical)
+#' efficiencies; \code{4}—unit-specific point and interval estimates of
+#' efficiencies. Default is \code{3}.
+#'
+#' @param digits
+#' integer. Number of digits for displaying estimates and efficiencies. Default is \code{4}.
+#'
+#' @param ...
+#' additional arguments passed to internal methods or to \code{optim}, as relevant
+#' (e.g., \code{cost.eff.less.one = TRUE} for cost-frontier conventions).
+#'
+#' @details
+#' Models for \code{snsf} are specified symbolically. A typical model has the form
+#' \code{y ~ x1 + ...}, where \code{y} represents the logarithm of outputs or total
+#' costs and \code{\{x1, ...\}} is a set of inputs (for production) or outputs and
+#' input prices (for cost), all typically in logs.
+#'
+#' Options \code{ln.var.u} and \code{ln.var.v} allow for multiplicative
+#' heteroskedasticity in the inefficiency and/or noise components; i.e., their
+#' variances can be modeled as exponential functions of exogenous variables
+#' (including an intercept), as in Caudill et al. (1995).
+#'
+#' @return
+#' A list of class \code{"snsf"} with the following elements:
+#' \itemize{
+#'   \item{\code{coef}}{ — named numeric vector of ML parameter estimates.}
+#'   \item{\code{vcov}}{ — estimated covariance matrix of the ML estimator.}
+#'   \item{\code{loglik}}{ — numeric value of the log-likelihood at the ML estimates.}
+#'   \item{\code{efficiencies}}{ — \code{data.frame} with point estimates of unit-specific
+#'     technical or cost efficiencies: \eqn{\exp(-E(u|e))} (Jondrow et al., 1982),
+#'     \eqn{E(\exp(-u)\,|\,e)} (Battese & Coelli, 1988), and
+#'     \eqn{\exp(-M(u|e))}, where \eqn{M(u|e)} is the mode of the conditional
+#'     distribution of the inefficiency term; also includes estimated lower and
+#'     upper bounds of \eqn{(1-\alpha)\times 100\%} two-sided prediction intervals.}
+#'   \item{\code{su}}{ — matrix of estimated unit-specific variances of the
+#'     inefficiency term; returned if \code{ln.var.u} is not \code{NULL}.}
+#'   \item{\code{sv}}{ — matrix of estimated unit-specific variances of the
+#'     random noise component; returned if \code{ln.var.v} is not \code{NULL}.}
+#'   \item{\code{mu}}{ — matrix of estimated unit-specific means of the
+#'     pre-truncated normal distribution of the inefficiency term; returned if
+#'     \code{mean.u} is not \code{NULL}.}
+#'   \item{\code{esample}}{ — logical vector indicating which observations in
+#'     \code{data} are in the estimation subsample.}
+#'   \item{\code{call}}{ — the matched call.}
+#'   \item{\code{terms}}{ — the model terms.}
+#' }
+#'
+#' @references
+#' Badunenko, O., & Henderson, D. J. (2023).
+#' \emph{Production analysis with asymmetric noise}.
+#' Journal of Productivity Analysis, \bold{61}(1), 1–18.
+#' \doi{10.1007/s11123-023-00680-5}
+#'
+#' Caudill, S. B., Ford, J. M., & Gropper, D. M. (1995).
+#' \emph{Frontier estimation and firm-specific inefficiency measures in the presence of heteroskedasticity}.
+#' Journal of Business & Economic Statistics, \bold{13}(1), 105–111.
+#'
+#' @author
+#' Oleg Badunenko <Oleg.Badunenko.brunel.ac.uk>
+#'
+#' @seealso \code{\link[npsf]{sf}}
+#'
+#' @examples
+#' \dontrun{
+#'   library(snsf)
+#'
+#'   data("banks07")
+#'   head(banks07)
+#'
+#'   myprod <- FALSE
+#'
+#'   spe.tl <- log(TC) ~ (log(Y1) + log(Y2) + log(W1) + log(W2))^2 +
+#'     I(0.5*log(Y1)^2) + I(0.5*log(Y2)^2) + I(0.5*log(W1)^2) + I(0.5*log(W2)^2)
+#'
+#'   # Specification 1
+#'   formSV <- NULL
+#'   formSK <- NULL
+#'   formSU <- NULL
+#'
+#'   # Normal-Exponential model
+#'   m1.n <- npsf::sf(
+#'     formula = spe.tl, data = banks06_07, subset = year == 2007, prod = myprod,
+#'     distribution = "e", ln.var.u.0i = formSU, ln.var.v.0i = formSV
+#'   )
+#'
+#'   # Skewnormal-Exponential model
+#'   m1.sn <- snsf::snsf(
+#'     formula = spe.tl, data = banks06_07, subset = year == 2007, prod = myprod,
+#'     ln.var.u = formSU, ln.var.v = formSV, v.skew = formSK
+#'   )
+#'
+#'   # Specification 2
+#'   formSK <- ~ ER
+#'
+#'   # Normal-Exponential model
+#'   m2.n <- npsf::sf(
+#'     formula = spe.tl, data = banks06_07, subset = year <= 2007, prod = myprod,
+#'     distribution = "e", ln.var.u.0i = formSU, ln.var.v.0i = formSV,
+#'     cost.eff.less.one = TRUE
+#'   )
+#'
+#'   # Skewnormal-Exponential model
+#'   m2.sn <- snsf::snsf(
+#'     formula = spe.tl, data = banks06_07, subset = year <= 2007, prod = myprod,
+#'     ln.var.u = formSU, ln.var.v = formSV, v.skew = formSK,
+#'     cost.eff.less.one = TRUE
+#'   )
+#'
+#'   # Specification 3
+#'   formSV <- ~ log(TA)
+#'   formSK <- ~ ER
+#'   formSU <- ~ LA + ER
+#'
+#'   # Normal-Exponential model
+#'   m3.n <- npsf::sf(
+#'     formula = spe.tl, data = banks06_07, subset = year == 2007, prod = myprod,
+#'     distribution = "e", ln.var.u.0i = formSU, ln.var.v.0i = formSV,
+#'     cost.eff.less.one = TRUE
+#'   )
+#'
+#'   # Skewnormal-Exponential model
+#'   m3.sn <- snsf::snsf(
+#'     formula = spe.tl, data = banks06_07, subset = year == 2007, prod = myprod,
+#'     ln.var.u = formSU, ln.var.v = formSV, v.skew = formSK
+#'   )
+#' }
+#'
+#' @keywords Stochastic Frontier Analysis Heteroskedasticity Parametric efficiency analysis
+#' @export
+snsf <- function(
+    formula, data, subset,
+    distribution,
+    prod      = TRUE,
+    start.val = NULL,
+    init.sk   = NULL,#.5*(2*prod-1),
+    ln.var.u  = NULL,
+    ln.var.v  = NULL,
+    v.skew    = NULL,
+    mean.u    = NULL,
+    technique = c('nr'),#,'bhhh','nm', 'bfgs', 'cg'),
+    vcetype   = c('aim'),#, 'opg'), # `approximated information matrix` or `outer product of gradients`
+    optim.report = 1,
+    optim.trace  = 1,
+    reltol = 1e-12,
+    lmtol = 1e-5,  
+    maxit = 199,
+    print.level = 3, 
+    report    = 1,
+    trace     = 1,
+    threads   = 1,
+    only.data = FALSE,
+    digits = 4,
+    ...
+) {
+
   # threads <- 1
   
   # cat("0\n")
@@ -322,7 +551,7 @@ snsf <- function (
   
   tymch1$par[k+2] <- alpha.0
   
-  if(is.null(start.sk)){
+  if(is.null(init.sk)){
     # sk.initial <- tymch1$par[(k+ksv+1):(k+ksv+ksk)] * .5
     if(ksk==1){
       sk.initial <- tymch1$par[k+2] * .5
@@ -331,9 +560,9 @@ snsf <- function (
     }
   } else {
     if(ksk==1){
-      sk.initial <- start.sk
+      sk.initial <- init.sk
     } else {
-      sk.initial <- c(start.sk, rep(0,ksk-1))
+      sk.initial <- c(init.sk, rep(0,ksk-1))
     }
   }
   
@@ -388,10 +617,10 @@ snsf <- function (
   }
   # some most probably bad sk
   # if(ksk == 1){
-  #   # theta0 <- c(theta0, myprod*start.sk)
+  #   # theta0 <- c(theta0, myprod*init.sk)
   #   theta0 <- c(theta0, sk.initial)
   # } else {
-  #   # theta0 <- c(theta0, myprod*start.sk, rep(0.0, (ksk-1) ))
+  #   # theta0 <- c(theta0, myprod*init.sk, rep(0.0, (ksk-1) ))
   #   theta0 <- c(theta0, sk.initial, rep(0.0, (ksk-1) ))
   # }
   theta0 <- c(theta0, sk.initial)
@@ -577,8 +806,8 @@ snsf <- function (
           myprod = myprod,
           method = technique, hessian = FALSE,
           control = list(fnscale = -1, 
-                         trace = trace, 
-                         REPORT = report, 
+                         trace = optim.trace, 
+                         REPORT = optim.report, 
                          maxit = ifelse(technique == 'Nelder-Mead', max(2e5, maxit), maxit), 
                          reltol = reltol),
           y=Y, x=X, zsv=zsv, zsk=zsk, zsu=zsu, 
@@ -645,8 +874,8 @@ snsf <- function (
           myprod = myprod,
           method = technique, hessian = FALSE,
           control = list(fnscale = -1,
-                         trace = trace,
-                         REPORT = report,
+                         trace = optim.trace,
+                         REPORT = optim.report,
                          maxit = ifelse(technique == 'Nelder-Mead', max(2e5, maxit), maxit),
                          reltol = reltol),
           y=Y, x=X, zsv=zsv, zsk=zsk, zsu=zsu,
@@ -671,8 +900,8 @@ snsf <- function (
           myprod = myprod,
           method = technique, hessian = FALSE,
           control = list(fnscale = -1,
-                         trace = trace,
-                         REPORT = report,
+                         trace = optim.trace,
+                         REPORT = optim.report,
                          maxit = ifelse(technique == 'Nelder-Mead', max(2e5, maxit), maxit),
                          reltol = reltol),
           y=Y, x=X, zsv=zsv, zsk=zsk, zsu=zsu, zmu=zmu,

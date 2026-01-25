@@ -1,11 +1,171 @@
+
+#' Linear Regression with Skew-Normal Errors
+#'
+#' @title Linear Regression with Skew-Normal Errors
+#'
+#' @description
+#' \code{snreg} fits a linear regression model where the disturbance term follows
+#' a skew-normal distribution. The function supports multiplicative
+#' heteroskedasticity of the noise variance via a log-linear specification
+#' (\code{ln.var.v}) and allows the skewness parameter to vary linearly with
+#' exogenous variables (\code{skew.v}).
+#'
+#' @param formula
+#' an object of class \code{formula} specifying the regression:
+#' typically \code{y ~ x1 + ...}, where \code{y} is the dependent variable
+#' and \code{x}'s are regressors.
+#'
+#' @param data
+#' an optional \code{data.frame} containing the variables in \code{formula}.
+#' If not found in \code{data}, variables are taken from \code{environment(formula)}.
+#'
+#' @param subset
+#' an optional logical or numeric vector specifying the subset of observations
+#' to be used in estimation.
+#'
+#' @param start.sk
+#' numeric. Initial value for the (global) skewness parameter of the noise;
+#' can be \code{NULL} if \code{skew.v} is supplied with its own coefficients to initialize.
+#'
+#' @param ln.var.v
+#' optional one-sided formula; e.g. \code{ln.var.v ~ z1 + z2}. Specifies
+#' exogenous variables entering the (log) variance of the random noise component.
+#' If \code{NULL}, the noise variance is homoskedastic.
+#'
+#' @param skew.v
+#' optional one-sided formula; e.g. \code{skew.v ~ z3 + z4}. Specifies exogenous
+#' variables determining the skewness of the noise via a linear index; if
+#' \code{NULL}, the skewness is constant (scalar).
+#'
+#' @param start.val
+#' optional numeric vector of starting values for all free parameters
+#' (regression coefficients, variance/heteroskedasticity parameters, skewness parameters).
+#'
+#' @param technique
+#' character vector giving the preferred maximization routine(s) in order of
+#' preference. Currently recognized keywords include \code{"nr"} (Newton–Raphson),
+#' \code{"bhhh"}, \code{"nm"} (Nelder–Mead), \code{"bfgs"}, \code{"cg"}.
+#' This scaffold does not implement them yet, but records the choice.
+#'
+#' @param vcetype
+#' character specifying the variance-covariance estimator type:
+#' \code{"aim"} for the approximated information matrix or \code{"opg"}
+#' for the outer product of gradients. Default is \code{"aim"}.
+#'
+#' @param lmtol
+#' numeric. Convergence tolerance based on the scaled gradient (if applicable).
+#' Default is \code{1e-5}.
+#'
+#' @param reltol
+#' numeric. Relative convergence tolerance for likelihood maximization.
+#' Default is \code{1e-12}.
+#'
+#' @param maxit
+#' integer. Maximum number of iterations for the optimizer. Default is \code{199}.
+#'
+#' @param report
+#' integer. Verbosity for reporting progress (if implemented). Default is \code{1}.
+#'
+#' @param trace
+#' integer. If positive, tracing information is printed (if implemented).
+#' Default is \code{1}.
+#'
+#' @param print.level
+#' integer. Printing level for summaries: \code{1}—print estimation results;
+#' \code{2}—print optimization details; \code{3}—print compact summary. Default \code{3}.
+#'
+#' @param digits
+#' integer. Number of digits for printing. Default \code{4}.
+#'
+#' @param threads
+#' integer. Number of threads (placeholder for parallel implementations).
+#' Default \code{1}.
+#'
+#' @param only.data
+#' logical. If \code{TRUE}, the function returns only the constructed model
+#' matrices and design sets (no estimation). Default \code{FALSE}.
+#'
+#' @param ...
+#' additional arguments reserved for future methods (e.g., box constraints).
+#'
+
+#' @details
+#' The model is
+#' \deqn{y_i = x_i^\top \beta + \varepsilon_i,\quad \varepsilon_i \sim SN(0, \sigma_i^2, \alpha_i),}
+#' where \eqn{SN} denotes the skew-normal distribution (Azzalini).
+#'
+#' Heteroskedasticity in the noise variance (if specified via \code{ln.var.v}) is modeled as
+#' \deqn{\log(\sigma_i^2) = w_i^\top \gamma_v,}
+#' and the (optional) covariate-driven skewness (if specified via \code{skew.v}) as
+#' \deqn{\alpha_i = s_i^\top \delta.}
+#'
+#' This function constructs the model frame and design matrices for
+#' \eqn{\beta}, \eqn{\gamma_v}, and \eqn{\delta}, and is designed to be paired with
+#' a maximum likelihood routine to estimate parameters and (optionally) their
+#' asymptotic covariance via either AIM or OPG.
+#'
+#' @return
+#' An object of class \code{"snreg"} with elements:
+#' \itemize{
+#'   \item{\code{call}}{ — matched function call.}
+#'   \item{\code{terms}}{ — model terms for the main regression.}
+#'   \item{\code{model}}{ — list with constructed data: \code{y}, \code{X}, \code{Zv}, \code{Zs}.}
+#'   \item{\code{coef}}{ — named vector of MLEs (placeholder \code{numeric(0)} in scaffold).}
+#'   \item{\code{vcov}}{ — variance–covariance matrix (placeholder).}
+#'   \item{\code{loglik}}{ — log-likelihood at the solution (placeholder \code{NA}).}
+#'   \item{\code{esample}}{ — logical vector indicating the estimation sample.}
+#'   \item{\code{controls}}{ — list of control parameters and settings.}
+#' }
+#'
+#' @references
+#' Azzalini, A. (1985).
+#' \emph{A Class of Distributions Which Includes the Normal Ones}.
+#' Scandinavian Journal of Statistics, 12(2), 171–178.
+#'
+#' Azzalini, A., & Capitanio, A. (2014).
+#' \emph{The Skew-Normal and Related Families}.
+#' Cambridge University Press.
+#'
+#' @examples
+#' \dontrun{
+#'   # Simulated usage (replace with real data)
+#'   set.seed(1)
+#'   n <- 200
+#'   x1 <- rnorm(n); x2 <- runif(n)
+#'   X  <- cbind(1, x1, x2)
+#'   beta <- c(1, 2, -1)
+#'   y <- X %*% beta + rnorm(n)
+#'   df <- data.frame(y = as.numeric(y), x1 = x1, x2 = x2,
+#'                    z1 = rnorm(n), z2 = rnorm(n))
+#'
+#'   # Constant variance, constant skewness
+#'   m0 <- snreg(
+#'     formula = y ~ x1 + x2, data = df,
+#'     ln.var.v = NULL, skew.v = NULL,
+#'     technique = c("nr")
+#'   )
+#'   str(m0)
+#'
+#'   # Heteroskedastic variance and variable skewness
+#'   m1 <- snreg(
+#'     formula = y ~ x1 + x2, data = df,
+#'     ln.var.v = ~ z1 + z2,
+#'     skew.v   = ~ z1,
+#'     technique = c("bfgs"), vcetype = "opg"
+#'   )
+#'   str(m1)
+#' }
+#'
+#' @keywords regression skew-normal heteroskedasticity maximum-likelihood
+#' @export
 snreg <- function (
   formula, data, subset,
   start.sk  = NULL,#.5*(2*prod-1),
   ln.var.v  = NULL,
   skew.v    = NULL,
   start.val = NULL,
-  technique = c('nr'),#,'bhhh','nm', 'bfgs', 'cg'),
-  vcetype   = c('aim'),#, 'opg'), # `approximated information matrix` or `outer product of gradients`
+  technique = c('nr'),   #,'bhhh','nm', 'bfgs', 'cg'),
+  vcetype   = c('aim'),  #, 'opg'), # `approximated information matrix` or `outer product of gradients`
   lmtol     = 1e-5,  
   reltol    = 1e-12, 
   maxit     = 199, 

@@ -2314,12 +2314,33 @@ hessian2 <- function(funcg, at, ...){
 }
 
 
-coef.mat.print <- function(coeffs, digits = 4, large = 999){
-  if(!is.matrix(coeffs)) coeffs <- as.matrix(coeffs)
-  ifelse(abs(coeffs[,, drop = FALSE]) > large | abs(coeffs[,, drop = FALSE]) < 10^-(digits), formatC(coeffs[,, drop = FALSE], digits = 1, format = "e", width = digits+5), formatC(coeffs[,, drop = FALSE], digits = digits, format = "f", width = digits+5))
+
+
+
+#' Pretty-print coefficient matrix (internal helper)
+#'
+#' @keywords internal
+#' @noRd
+coef_mat_print <- function(coeffs, digits = 4, large = 999) {
+  if (!is.matrix(coeffs)) coeffs <- as.matrix(coeffs)
+  
+  big_or_small <- abs(coeffs[, , drop = FALSE]) > large |
+    abs(coeffs[, , drop = FALSE]) < 10^(-digits)
+  
+  out <- coeffs
+  out[big_or_small] <- formatC(coeffs[big_or_small, drop = TRUE],
+                               digits = 1, format = "e",
+                               width = digits + 5)
+  out[!big_or_small] <- formatC(coeffs[!big_or_small, drop = TRUE],
+                                digits = digits, format = "f",
+                                width = digits + 5)
+  out
 }
 
-
+# coef.mat.print <- function(coeffs, digits = 4, large = 999){
+#   if(!is.matrix(coeffs)) coeffs <- as.matrix(coeffs)
+#   ifelse(abs(coeffs[,, drop = FALSE]) > large | abs(coeffs[,, drop = FALSE]) < 10^-(digits), formatC(coeffs[,, drop = FALSE], digits = 1, format = "e", width = digits+5), formatC(coeffs[,, drop = FALSE], digits = digits, format = "f", width = digits+5))
+# }
 
 
 
