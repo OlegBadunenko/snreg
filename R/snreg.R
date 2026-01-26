@@ -63,10 +63,10 @@
 #' @param maxit
 #' integer. Maximum number of iterations for the optimizer. Default is \code{199}.
 #'
-#' @param report
+#' @param optim.report
 #' integer. Verbosity for reporting progress (if implemented). Default is \code{1}.
 #'
-#' @param trace
+#' @param optim.trace
 #' integer. If positive, tracing information is printed (if implemented).
 #' Default is \code{1}.
 #'
@@ -206,8 +206,8 @@ snreg <- function (
   lmtol     = 1e-5,  
   reltol    = 1e-12, 
   maxit     = 199, 
-  report    = 1,
-  trace     = 1,
+  optim.report    = 1,
+  optim.trace     = 1,
   print.level = 3, 
   digits    = 4,
   only.data = FALSE,

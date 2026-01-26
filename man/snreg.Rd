@@ -17,8 +17,8 @@ snreg(
   lmtol = 1e-05,
   reltol = 1e-12,
   maxit = 199,
-  report = 1,
-  trace = 1,
+  optim.report = 1,
+  optim.trace = 1,
   print.level = 3,
   digits = 4,
   only.data = FALSE,
@@ -67,9 +67,9 @@ Default is \code{1e-12}.}
 
 \item{maxit}{integer. Maximum number of iterations for the optimizer. Default is \code{199}.}
 
-\item{report}{integer. Verbosity for reporting progress (if implemented). Default is \code{1}.}
+\item{optim.report}{integer. Verbosity for reporting progress (if implemented). Default is \code{1}.}
 
-\item{trace}{integer. If positive, tracing information is printed (if implemented).
+\item{optim.trace}{integer. If positive, tracing information is printed (if implemented).
 Default is \code{1}.}
 
 \item{print.level}{integer. Printing level for summaries: \code{1}—print estimation results;

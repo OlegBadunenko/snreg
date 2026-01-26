@@ -6,6 +6,7 @@ Date: 2021-06-19
 Author: Oleg Badunenko [aut, cre], John Burkardt [cph]
 Maintainer: Oleg Badunenko <Oleg.Badunenko@brunel.ac.uk>
 Description: Models with a skew-normally distributed error term: Badunenko & Henderson (2023). Production analysis with asymmetric noise. Journal of Productivity Analysis, https://doi.org/10.1007/s11123-023-00680-5
+URL: https://olegbadunenko.github.io/snreg/
 Depends: Formula, npsf
 License: file LICENCE
 Encoding: UTF-8
