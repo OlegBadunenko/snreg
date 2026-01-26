@@ -1,3 +1,12 @@
+---
+title: "Illustration"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Illustration}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
 # Illustration
 
 ## Data
@@ -745,4 +754,8 @@ coef(m2)
 
 ## Additional Resources
 
-To be added
+See
+
+> Oleg Badunenko and Daniel J. Henderson (2023). "Production analysis with asymmetric noise". Journal of Productivity Analysis, 61(1), 1–18. [DOI <img src="man/figures/doi.png" alt="" width="12" height="12">](https://doi.org/10.1007/s11123-023-00680-5)
+
+for more details

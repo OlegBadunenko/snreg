@@ -5,13 +5,17 @@
 
 <!-- badges: start -->
 
-[![](http://cranlogs.r-pkg.org/badges/grand-total/npsf?color=blue)](https://cran.r-project.org/package=npsf)
-[![](http://cranlogs.r-pkg.org/badges/last-month/npsf?color=yellow)](https://cran.r-project.org/package=npsf)
+<div class="readme-badges">
+
+[![](https://cranlogs.r-pkg.org/badges/grand-total/npsf?color=blue)](https://cran.r-project.org/package=npsf)
+[![](https://cranlogs.r-pkg.org/badges/last-month/npsf?color=yellow)](https://cran.r-project.org/package=npsf)
 [![](https://www.r-pkg.org/badges/version/npsf?color=green)](https://cran.r-project.org/package=npsf)
-[![](https://img.shields.io/badge/devel%20version-1.0-green.svg)](https://github.com/OlegBadunenko/snreg)
+[![](https://img.shields.io/badge/devel%20version-1.1.0.9000-green.svg)](https://github.com/OlegBadunenko/snreg)
 [![CRAN
 checks](https://badges.cranchecks.info/summary/npsf.svg)](https://cran.r-project.org/web/checks/check_results_npsf.html)
 [![](https://img.shields.io/github/last-commit/OlegBadunenko/snreg.svg)](https://github.com/OlegBadunenko/snreg/commits/main)
+
+</div>
 
 <!-- badges: end -->
 
@@ -25,12 +29,17 @@ analysis when the model errors follow a skew‑normal distribution.
 The `snreg` package implements the framework developed in
 
 Oleg Badunenko and Daniel J. Henderson (2023). “Production analysis with
-asymmetric noise”. Journal of Productivity Analysis, 61(1), 1–18. [DOI
-<img src="man/figures/doi.png"  width="12" height="12">](https://doi.org/10.1007/s11123-023-00680-5)
+asymmetric noise”. Journal of Productivity Analysis, 61(1), 1–18. [DOI <img src="man/figures/doi.png" alt="" width="12" height="12">](https://doi.org/10.1007/s11123-023-00680-5)
 
 R commands `snreg` and `snsf` estimate models with skew-normal errors
-written and maintained by Oleg Badunenko
-(<oleg.badunenko@proton.me>).
+written and maintained by Oleg Badunenko (<oleg.badunenko@brunel.ac.uk>).
+
+## Acknowledgments
+
+The R package `snreg` computes Owen’s *T* function using C code written
+by John Burkardt. This implementation, distributed under the MIT
+license, is publicly accessible at
+<https://people.sc.fsu.edu/~jburkardt/c_src/owen/owen.html>.
 
 # 📦 Installing `snreg` R Package from GitHub
 
@@ -39,7 +48,10 @@ written and maintained by Oleg Badunenko
 > Install `devtools` from CRAN (if you haven’t already):
 
 ``` r
-install.packages("devtools")
+# Install only if not already installed
+if (!requireNamespace("remotes", quietly = TRUE)) {
+  install.packages("remotes")
+}
 ```
 
 ### 2. Install the package from GitHub
@@ -48,8 +60,12 @@ install.packages("devtools")
 > installing the `snreg` package created by `OlegBadunenko`.
 
 ``` r
-library(devtools)
-install_github("OlegBadunenko/snreg")
+# Install only if not already installed
+if (!requireNamespace("snreg", quietly = TRUE)) {
+  remotes::install_github("OlegBadunenko/snreg", dependencies = TRUE, build_vignettes = FALSE)
+} else {
+  message("Package 'snreg' is already installed; skipping.")
+}
 ```
 
 ### 3. Load the installed package
@@ -69,9 +85,8 @@ library(snreg)
 
 ## Illustration and Uses
 
-This [article](https://olegbadunenko.github.io/snreg/illustration.html)
+This [article](https://olegbadunenko.github.io/snreg/articles/illustration.html)
 guides through the code and illustrates the functionality of the package
 using
 
 > a subset of the banking data (`banks07`) available in the package.
-

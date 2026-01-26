@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">snreg</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -69,6 +69,113 @@
 <li>Some GitHub packages may already be available in environments like <code>npsf</code>.</li>
 <li>If installation fails, common causes include missing build tools, incorrect repo names, or network restrictions.</li>
 </ul></div>
+</div>
+<div class="section level1">
+<h1 id="illustration">Illustration<a class="anchor" aria-label="anchor" href="#illustration"></a></h1>
+<div class="section level2">
+<h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a></h2>
+<blockquote>
+<p> is a data frame containing selected variables for 500 U.S. commercial banks, randomly sampled from approximately 5000 banks, based on the dataset of Koetter et al. (2012) for year 2007. The dataset is provided solely for illustration and pedagogical purposes and is not suitable for empirical research.</p>
+</blockquote>
+<p><code>{r data, eval = TRUE}   library(snreg)   library(tidyverse)   data(banks07, package = "snreg")   head(banks07)</code></p>
+</div>
+<div class="section level2">
+<h2 id="specification">Specification<a class="anchor" aria-label="anchor" href="#specification"></a></h2>
+<blockquote>
+<p>Define the specification (formula) that will be used:</p>
+</blockquote>
+<p><code>{r formula, eval = TRUE} # Translog cost function specification spe.tl &lt;- log(TC) ~ (log(Y1) + log(Y2) + log(W1) + log(W2))^2 +   I(0.5 * log(Y1)^2) + I(0.5 * log(Y2)^2) +   I(0.5 * log(W1)^2) + I(0.5 * log(W2)^2)</code></p>
+</div>
+<div class="section level2">
+<h2 id="linear-regression-via-mle">Linear Regression via MLE<a class="anchor" aria-label="anchor" href="#linear-regression-via-mle"></a></h2>
+<p>To estimate simple OLS using MLE</p>
+<p>```{r lmmle, eval = TRUE} # ————————————————————- # Specification 1: homoskedastic noise (ln.var.v = NULL) # ————————————————————- formSV &lt;- NULL</p>
+<p>m1 &lt;- lm.mle( formula = spe.tl, data = banks07, ln.var.v = formSV )</p>
+<p>coef(m1)</p>
+</div>
+</div>
+<div class="section level1">
+<h1 id="id_-">————————————————————-<a class="anchor" aria-label="anchor" href="#id_-"></a></h1>
+</div>
+<div class="section level1">
+<h1 id="specification-2-heteroskedastic-noise-variance-depends-on-ta">Specification 2: heteroskedastic noise (variance depends on TA)<a class="anchor" aria-label="anchor" href="#specification-2-heteroskedastic-noise-variance-depends-on-ta"></a></h1>
+</div>
+<div class="section level1">
+<h1 id="id_--1">————————————————————-<a class="anchor" aria-label="anchor" href="#id_--1"></a></h1>
+<p>formSV &lt;- ~ log(TA)</p>
+<p>m2 &lt;- lm.mle( formula = spe.tl, data = banks07, ln.var.v = formSV )</p>
+<p>coef(m2)</p>
+<pre><code>
+## Linear Regression with Skew-Normal Errors
+
+&gt; `snreg` fits a linear regression model where the disturbance term follows a skew-normal distribution.
+
+```{r snreg, eval=TRUE}
+# -------------------------------------------------------------
+# Specification 1: homoskedastic &amp; symmetric noise
+# -------------------------------------------------------------
+formSV &lt;- NULL     # variance equation
+formSK &lt;- NULL     # skewness equation
+
+m1 &lt;- snreg(
+  formula  = spe.tl,
+  data     = banks07,
+  ln.var.v = formSV,
+  skew.v   = formSK
+)
+
+coef(m1)
+
+
+# -------------------------------------------------------------
+# Specification 2: heteroskedastic + skewed noise
+# -------------------------------------------------------------
+formSV &lt;- ~ log(TA)   # heteroskedasticity in v
+formSK &lt;- ~ ER        # skewness driven by equity ratio
+
+m2 &lt;- snreg(
+  formula  = spe.tl,
+  data     = banks07,
+  ln.var.v = formSV,
+  skew.v   = formSK
+)
+
+coef(m2)</code></pre>
+<div class="section level2">
+<h2 id="stochastic-frontier-model-with-a-skew-normally-distributed-error-term">Stochastic Frontier Model with a Skew-Normally Distributed Error Term<a class="anchor" aria-label="anchor" href="#stochastic-frontier-model-with-a-skew-normally-distributed-error-term"></a></h2>
+<blockquote>
+<p><code>snsf</code> performs maximum likelihood estimation of the parameters and technical or cost efficiencies in a Stochastic Frontier Model with a skew-normally distributed error term.</p>
+</blockquote>
+<p>```{r snsf, eval=TRUE} myprod &lt;- FALSE</p>
+</div>
+</div>
+<div class="section level1">
+<h1 id="id_--2">————————————————————-<a class="anchor" aria-label="anchor" href="#id_--2"></a></h1>
+</div>
+<div class="section level1">
+<h1 id="specification-1-homoskedastic--symmetric">Specification 1: homoskedastic &amp; symmetric<a class="anchor" aria-label="anchor" href="#specification-1-homoskedastic--symmetric"></a></h1>
+</div>
+<div class="section level1">
+<h1 id="id_--3">————————————————————-<a class="anchor" aria-label="anchor" href="#id_--3"></a></h1>
+<p>formSV &lt;- NULL # variance equation formSK &lt;- NULL # skewness equation formSU &lt;- NULL # inefficiency equation (unused here)</p>
+<p>m1 &lt;- snsf( formula = spe.tl, data = banks07, prod = myprod, ln.var.v = formSV, skew.v = formSK )</p>
+<p>coef(m1)</p>
+</div>
+<div class="section level1">
+<h1 id="id_--4">————————————————————-<a class="anchor" aria-label="anchor" href="#id_--4"></a></h1>
+</div>
+<div class="section level1">
+<h1 id="specification-2-heteroskedastic--skewed-noise">Specification 2: heteroskedastic + skewed noise<a class="anchor" aria-label="anchor" href="#specification-2-heteroskedastic--skewed-noise"></a></h1>
+</div>
+<div class="section level1">
+<h1 id="id_--5">————————————————————-<a class="anchor" aria-label="anchor" href="#id_--5"></a></h1>
+<p>formSV &lt;- ~ log(TA) # heteroskedastic variance formSK &lt;- ~ ER # skewness driver formSU &lt;- ~ LA + ER # inefficiency</p>
+<p>m2 &lt;- snsf( formula = spe.tl, data = banks07, prod = myprod, ln.var.v = formSV, skew.v = formSK )</p>
+<p>coef(m2) ```</p>
+<div class="section level2">
+<h2 id="additional-resources">Additional Resources<a class="anchor" aria-label="anchor" href="#additional-resources"></a></h2>
+<p>To be added</p>
+</div>
 </div>
 
 

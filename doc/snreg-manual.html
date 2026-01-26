@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Introduction to snreg</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to snreg</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(snreg)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co">#&gt; Loading required package: Formula</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#&gt; Loading required package: npsf</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&gt; ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co">#&gt; ✔ dplyr     1.1.4     ✔ readr     2.1.6</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co">#&gt; ✔ forcats   1.0.1     ✔ stringr   1.6.0</span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="co">#&gt; ✔ ggplot2   4.0.1     ✔ tibble    3.3.1</span></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="co">#&gt; ✔ lubridate 1.9.4     ✔ tidyr     1.3.2</span></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="co">#&gt; ✔ purrr     1.2.1</span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co">#&gt; ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co">#&gt; ✖ dplyr::filter() masks stats::filter()</span></span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="co">#&gt; ✖ dplyr::lag()    masks stats::lag()</span></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span></code></pre></div>
+<div id="overview" class="section level1">
+<h1>Overview</h1>
+<p>The <code>snreg</code> package offers a set of methods for conducting
+regression analysis when the model errors follow a skew-normal
+distribution.</p>
+<div id="framework" class="section level2">
+<h2>Framework</h2>
+<p>The <code>snreg</code> package implements the framework developed
+in:</p>
+<p>Oleg Badunenko and Daniel J. Henderson (2023). “Production analysis
+with asymmetric noise”. <em>Journal of Productivity Analysis</em>,
+61(1), 1–18. <a href="https://doi.org/10.1007/s11123-023-00680-5">DOI</a></p>
+</div>
+</div>
+<div id="data" class="section level1">
+<h1>Data</h1>
+<p>We illustrate the functionality using the <code>banks07</code>
+dataset, which contains selected variables for 500 U.S. commercial banks
+randomly sampled for the year 2007.</p>
+<p><strong>Note:</strong> The dataset is provided solely for
+illustration and pedagogical purposes and is not suitable for empirical
+research.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">data</span>(banks07, <span class="at">package =</span> <span class="st">&quot;snreg&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">head</span>(banks07)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt;       id year        TC       Y1        Y2       W1       W2       W3        ER</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt; 1 152440 2007  4659.505  8661.84  58393.04 38.55422 37.75000 4.146092 0.1117789</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; 2 544335 2007 10848.960 19492.91 146789.00 30.66785 45.13934 2.263886 0.1139121</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt; 3 548203 2007 14523.650 18630.49 219705.70 27.38797 56.02857 4.312672 0.1342984</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt; 4 568238 2007  1644.808 11902.50  18675.68 32.84768 50.47368 1.541316 0.1029891</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#&gt; 5 651158 2007  3054.240 29322.21  38916.14 42.20033 52.23529 3.192056 0.1421004</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; 6 705444 2007  6168.736 36568.03  67179.16 11.95771 41.46667 3.181241 0.1449880</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co">#&gt;          LA        TA    ZSCORE  ZSCORE3     SDROA       LLP lnzscore lnzscore3</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co">#&gt; 1 0.7781611  75039.78  29.49198 11.93898 0.4532092  732.4904 3.384118  2.479809</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co">#&gt; 2 0.7679300 191148.92  62.97659 20.66493 0.2298561  305.9889 4.142763  3.028438</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co">#&gt; 3 0.8880010 247416.05  38.99969 30.88642 0.3874364 1534.6521 3.663554  3.430317</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co">#&gt; 4 0.5050412  36978.53  30.68124 24.53655 0.4063778    0.0000 3.423651  3.200164</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co">#&gt; 5 0.5264002  73928.81  30.02672 28.42257 0.5496323    0.0000 3.402088  3.347184</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#&gt; 6 0.5222276 128639.62 110.67650 37.66002 0.1502981    0.0000 4.706612  3.628599</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt;      lnsdroa     scope ms_county</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt; 1 -0.7914014 0.4801792 0.3466652</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt; 2 -1.4703018 0.5254947 0.8830606</span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt; 3 -0.9482036 0.8897177 1.1430008</span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="co">#&gt; 4 -0.9004720 0.3917692 0.1708316</span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="co">#&gt; 5 -0.5985058 0.5523984 0.3415328</span></span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a><span class="co">#&gt; 6 -1.8951346 0.4073012 0.5942832</span></span></code></pre></div>
+</div>
+<div id="model-specification" class="section level1">
+<h1>Model Specification</h1>
+<p>Define the translog cost function specification:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>spe.tl <span class="ot">&lt;-</span> <span class="fu">log</span>(TC) <span class="sc">~</span> (<span class="fu">log</span>(Y1) <span class="sc">+</span> <span class="fu">log</span>(Y2) <span class="sc">+</span> <span class="fu">log</span>(W1) <span class="sc">+</span> <span class="fu">log</span>(W2))<span class="sc">^</span><span class="dv">2</span> <span class="sc">+</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">I</span>(<span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">log</span>(Y1)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(<span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">log</span>(Y2)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="fu">I</span>(<span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">log</span>(W1)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">+</span> <span class="fu">I</span>(<span class="fl">0.5</span> <span class="sc">*</span> <span class="fu">log</span>(W2)<span class="sc">^</span><span class="dv">2</span>)</span></code></pre></div>
+</div>
+<div id="linear-regression-via-mle" class="section level1">
+<h1>Linear Regression via MLE</h1>
+<div id="homoskedastic-model" class="section level2">
+<h2>Homoskedastic Model</h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>formSV <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>m1 <span class="ot">&lt;-</span> <span class="fu">lm.mle</span>(</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="at">formula   =</span> spe.tl,</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="at">data      =</span> banks07,</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="at">ln.var.v  =</span> formSV</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>)</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;  theta0:</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt;          (Intercept)              log(Y1)              log(Y2) </span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt;         -4.386991731          0.415874408          0.370050861 </span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt;              log(W1)              log(W2)   I(0.5 * log(Y1)^2) </span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt;          0.524152369          1.342097991          0.047454756 </span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt;   I(0.5 * log(Y2)^2)   I(0.5 * log(W1)^2)   I(0.5 * log(W2)^2) </span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt;          0.077484315          0.034996665         -0.226281101 </span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt;      log(Y1):log(Y2)      log(Y1):log(W1)      log(Y1):log(W2) </span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt;         -0.057609631         -0.020462972         -0.005676474 </span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt;      log(Y2):log(W1)      log(Y2):log(W2)      log(W1):log(W2) </span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt;          0.013639077          0.018840745         -0.154925076 </span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept) </span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt;         -3.687587268 </span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt; -------------- Regression with normal errors: ---------------</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt; initial  value -212.427550 </span></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt; iter   1 value -212.427550</span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt; final  value -212.427550 </span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt; converged</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt;                        Estimate    Std.Err  Z value    Pr(&gt;z)    </span></span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt; (Intercept)          -4.3869917  3.0631686  -1.4322 0.1520939    </span></span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt; log(Y1)               0.4158744  0.1494204   2.7832 0.0053817 ** </span></span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt; log(Y2)               0.3700509  0.2827874   1.3086 0.1906756    </span></span>
+<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a><span class="co">#&gt; log(W1)               0.5241524  0.2828127   1.8534 0.0638314 .  </span></span>
+<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a><span class="co">#&gt; log(W2)               1.3420980  1.2504546   1.0733 0.2831419    </span></span>
+<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(Y1)^2)    0.0474548  0.0060002   7.9088 2.665e-15 ***</span></span>
+<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(Y2)^2)    0.0774843  0.0225416   3.4374 0.0005873 ***</span></span>
+<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(W1)^2)    0.0349967  0.0273035   1.2818 0.1999249    </span></span>
+<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(W2)^2)   -0.2262811  0.3426730  -0.6603 0.5090349    </span></span>
+<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(Y2)      -0.0576096  0.0113060  -5.0955 3.479e-07 ***</span></span>
+<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(W1)      -0.0204630  0.0121495  -1.6843 0.0921316 .  </span></span>
+<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(W2)      -0.0056765  0.0386938  -0.1467 0.8833669    </span></span>
+<span id="cb4-41"><a href="#cb4-41" tabindex="-1"></a><span class="co">#&gt; log(Y2):log(W1)       0.0136391  0.0161416   0.8450 0.3981301    </span></span>
+<span id="cb4-42"><a href="#cb4-42" tabindex="-1"></a><span class="co">#&gt; log(Y2):log(W2)       0.0188407  0.0596386   0.3159 0.7520666    </span></span>
+<span id="cb4-43"><a href="#cb4-43" tabindex="-1"></a><span class="co">#&gt; log(W1):log(W2)      -0.1549251  0.0695098  -2.2288 0.0258257 *  </span></span>
+<span id="cb4-44"><a href="#cb4-44" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept) -3.6875873  0.0632455 -58.3059 &lt; 2.2e-16 ***</span></span>
+<span id="cb4-45"><a href="#cb4-45" tabindex="-1"></a><span class="co">#&gt; ---</span></span>
+<span id="cb4-46"><a href="#cb4-46" tabindex="-1"></a><span class="co">#&gt; Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</span></span>
+<span id="cb4-47"><a href="#cb4-47" tabindex="-1"></a><span class="co">#&gt; _____________________________________________________________</span></span>
+<span id="cb4-48"><a href="#cb4-48" tabindex="-1"></a></span>
+<span id="cb4-49"><a href="#cb4-49" tabindex="-1"></a><span class="fu">coef</span>(m1)</span>
+<span id="cb4-50"><a href="#cb4-50" tabindex="-1"></a><span class="co">#&gt;          (Intercept)              log(Y1)              log(Y2) </span></span>
+<span id="cb4-51"><a href="#cb4-51" tabindex="-1"></a><span class="co">#&gt;         -4.386991731          0.415874408          0.370050861 </span></span>
+<span id="cb4-52"><a href="#cb4-52" tabindex="-1"></a><span class="co">#&gt;              log(W1)              log(W2)   I(0.5 * log(Y1)^2) </span></span>
+<span id="cb4-53"><a href="#cb4-53" tabindex="-1"></a><span class="co">#&gt;          0.524152369          1.342097991          0.047454756 </span></span>
+<span id="cb4-54"><a href="#cb4-54" tabindex="-1"></a><span class="co">#&gt;   I(0.5 * log(Y2)^2)   I(0.5 * log(W1)^2)   I(0.5 * log(W2)^2) </span></span>
+<span id="cb4-55"><a href="#cb4-55" tabindex="-1"></a><span class="co">#&gt;          0.077484315          0.034996665         -0.226281101 </span></span>
+<span id="cb4-56"><a href="#cb4-56" tabindex="-1"></a><span class="co">#&gt;      log(Y1):log(Y2)      log(Y1):log(W1)      log(Y1):log(W2) </span></span>
+<span id="cb4-57"><a href="#cb4-57" tabindex="-1"></a><span class="co">#&gt;         -0.057609631         -0.020462972         -0.005676474 </span></span>
+<span id="cb4-58"><a href="#cb4-58" tabindex="-1"></a><span class="co">#&gt;      log(Y2):log(W1)      log(Y2):log(W2)      log(W1):log(W2) </span></span>
+<span id="cb4-59"><a href="#cb4-59" tabindex="-1"></a><span class="co">#&gt;          0.013639077          0.018840745         -0.154925076 </span></span>
+<span id="cb4-60"><a href="#cb4-60" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept) </span></span>
+<span id="cb4-61"><a href="#cb4-61" tabindex="-1"></a><span class="co">#&gt;         -3.687587268</span></span></code></pre></div>
+</div>
+<div id="heteroskedastic-model" class="section level2">
+<h2>Heteroskedastic Model</h2>
+<p>Variance depends on total assets (TA):</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>formSV <span class="ot">&lt;-</span> <span class="er">~</span> <span class="fu">log</span>(TA)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>m2 <span class="ot">&lt;-</span> <span class="fu">lm.mle</span>(</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">formula   =</span> spe.tl,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">data      =</span> banks07,</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="at">ln.var.v  =</span> formSV</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt;  theta0:</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt;          (Intercept)              log(Y1)              log(Y2) </span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt;         -4.386991731          0.415874408          0.370050861 </span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt;              log(W1)              log(W2)   I(0.5 * log(Y1)^2) </span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt;          0.524152369          1.342097991          0.047454756 </span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt;   I(0.5 * log(Y2)^2)   I(0.5 * log(W1)^2)   I(0.5 * log(W2)^2) </span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt;          0.077484315          0.034996665         -0.226281101 </span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt;      log(Y1):log(Y2)      log(Y1):log(W1)      log(Y1):log(W2) </span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt;         -0.057609631         -0.020462972         -0.005676474 </span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="co">#&gt;      log(Y2):log(W1)      log(Y2):log(W2)      log(W1):log(W2) </span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co">#&gt;          0.013639077          0.018840745         -0.154925076 </span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept)     lnVARv0i_log(TA) </span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a><span class="co">#&gt;         -3.687587268          0.000000000 </span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="co">#&gt; -------------- Regression with normal errors: ---------------</span></span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="co">#&gt; initial  value -212.427550 </span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a><span class="co">#&gt; iter   2 value -212.435637</span></span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a><span class="co">#&gt; iter   2 value -212.435637</span></span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a><span class="co">#&gt; iter   2 value -212.435638</span></span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a><span class="co">#&gt; final  value -212.435638 </span></span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a><span class="co">#&gt; converged</span></span>
+<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a><span class="co">#&gt;                         Estimate     Std.Err Z value    Pr(&gt;z)    </span></span>
+<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a><span class="co">#&gt; (Intercept)          -4.38699173  3.07286157 -1.4277 0.1533907    </span></span>
+<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a><span class="co">#&gt; log(Y1)               0.41587442  0.14997873  2.7729 0.0055561 ** </span></span>
+<span id="cb5-33"><a href="#cb5-33" tabindex="-1"></a><span class="co">#&gt; log(Y2)               0.37005087  0.29216784  1.2666 0.2053093    </span></span>
+<span id="cb5-34"><a href="#cb5-34" tabindex="-1"></a><span class="co">#&gt; log(W1)               0.52415237  0.28241172  1.8560 0.0634555 .  </span></span>
+<span id="cb5-35"><a href="#cb5-35" tabindex="-1"></a><span class="co">#&gt; log(W2)               1.34209799  1.25258014  1.0715 0.2839596    </span></span>
+<span id="cb5-36"><a href="#cb5-36" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(Y1)^2)    0.04745481  0.00604526  7.8499 4.219e-15 ***</span></span>
+<span id="cb5-37"><a href="#cb5-37" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(Y2)^2)    0.07748436  0.02254101  3.4375 0.0005871 ***</span></span>
+<span id="cb5-38"><a href="#cb5-38" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(W1)^2)    0.03499667  0.02724489  1.2845 0.1989592    </span></span>
+<span id="cb5-39"><a href="#cb5-39" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(W2)^2)   -0.22628109  0.34575683 -0.6545 0.5128209    </span></span>
+<span id="cb5-40"><a href="#cb5-40" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(Y2)      -0.05760953  0.01151446 -5.0032 5.638e-07 ***</span></span>
+<span id="cb5-41"><a href="#cb5-41" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(W1)      -0.02046294  0.01213895 -1.6857 0.0918485 .  </span></span>
+<span id="cb5-42"><a href="#cb5-42" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(W2)      -0.00567644  0.03861266 -0.1470 0.8831243    </span></span>
+<span id="cb5-43"><a href="#cb5-43" tabindex="-1"></a><span class="co">#&gt; log(Y2):log(W1)       0.01363911  0.01617084  0.8434 0.3989832    </span></span>
+<span id="cb5-44"><a href="#cb5-44" tabindex="-1"></a><span class="co">#&gt; log(Y2):log(W2)       0.01884078  0.06006921  0.3137 0.7537860    </span></span>
+<span id="cb5-45"><a href="#cb5-45" tabindex="-1"></a><span class="co">#&gt; log(W1):log(W2)      -0.15492507  0.06936169 -2.2336 0.0255105 *  </span></span>
+<span id="cb5-46"><a href="#cb5-46" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept) -3.68758724  1.00965557 -3.6523 0.0002599 ***</span></span>
+<span id="cb5-47"><a href="#cb5-47" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_log(TA)     -0.00036448  0.08630781 -0.0042 0.9966305    </span></span>
+<span id="cb5-48"><a href="#cb5-48" tabindex="-1"></a><span class="co">#&gt; ---</span></span>
+<span id="cb5-49"><a href="#cb5-49" tabindex="-1"></a><span class="co">#&gt; Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</span></span>
+<span id="cb5-50"><a href="#cb5-50" tabindex="-1"></a><span class="co">#&gt; _____________________________________________________________</span></span>
+<span id="cb5-51"><a href="#cb5-51" tabindex="-1"></a></span>
+<span id="cb5-52"><a href="#cb5-52" tabindex="-1"></a><span class="fu">coef</span>(m2)</span>
+<span id="cb5-53"><a href="#cb5-53" tabindex="-1"></a><span class="co">#&gt;          (Intercept)              log(Y1)              log(Y2) </span></span>
+<span id="cb5-54"><a href="#cb5-54" tabindex="-1"></a><span class="co">#&gt;        -4.3869917305         0.4158744170         0.3700508703 </span></span>
+<span id="cb5-55"><a href="#cb5-55" tabindex="-1"></a><span class="co">#&gt;              log(W1)              log(W2)   I(0.5 * log(Y1)^2) </span></span>
+<span id="cb5-56"><a href="#cb5-56" tabindex="-1"></a><span class="co">#&gt;         0.5241523719         1.3420979943         0.0474548059 </span></span>
+<span id="cb5-57"><a href="#cb5-57" tabindex="-1"></a><span class="co">#&gt;   I(0.5 * log(Y2)^2)   I(0.5 * log(W1)^2)   I(0.5 * log(W2)^2) </span></span>
+<span id="cb5-58"><a href="#cb5-58" tabindex="-1"></a><span class="co">#&gt;         0.0774843635         0.0349966695        -0.2262810941 </span></span>
+<span id="cb5-59"><a href="#cb5-59" tabindex="-1"></a><span class="co">#&gt;      log(Y1):log(Y2)      log(Y1):log(W1)      log(Y1):log(W2) </span></span>
+<span id="cb5-60"><a href="#cb5-60" tabindex="-1"></a><span class="co">#&gt;        -0.0576095323        -0.0204629424        -0.0056764377 </span></span>
+<span id="cb5-61"><a href="#cb5-61" tabindex="-1"></a><span class="co">#&gt;      log(Y2):log(W1)      log(Y2):log(W2)      log(W1):log(W2) </span></span>
+<span id="cb5-62"><a href="#cb5-62" tabindex="-1"></a><span class="co">#&gt;         0.0136391061         0.0188407818        -0.1549250651 </span></span>
+<span id="cb5-63"><a href="#cb5-63" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept)     lnVARv0i_log(TA) </span></span>
+<span id="cb5-64"><a href="#cb5-64" tabindex="-1"></a><span class="co">#&gt;        -3.6875872440        -0.0003644791</span></span></code></pre></div>
+</div>
+</div>
+<div id="linear-regression-with-skew-normal-errors" class="section level1">
+<h1>Linear Regression with Skew-Normal Errors</h1>
+<p>The <code>snreg()</code> function fits a linear regression model
+where the disturbance term follows a skew-normal distribution.</p>
+<div id="homoskedastic-and-symmetric-model" class="section level2">
+<h2>Homoskedastic and Symmetric Model</h2>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>formSV <span class="ot">&lt;-</span> <span class="cn">NULL</span>     <span class="co"># variance equation</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>formSK <span class="ot">&lt;-</span> <span class="cn">NULL</span>     <span class="co"># skewness equation</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>m1 <span class="ot">&lt;-</span> <span class="fu">snreg</span>(</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="at">formula  =</span> spe.tl,</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="at">data     =</span> banks07,</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  <span class="at">ln.var.v =</span> formSV,</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  <span class="at">skew.v   =</span> formSK</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>)</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt;  theta0:</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt;          (Intercept)              log(Y1)              log(Y2) </span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt;         -4.386991731          0.415874408          0.370050861 </span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt;              log(W1)              log(W2)   I(0.5 * log(Y1)^2) </span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt;          0.524152369          1.342097991          0.047454756 </span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt;   I(0.5 * log(Y2)^2)   I(0.5 * log(W1)^2)   I(0.5 * log(W2)^2) </span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt;          0.077484315          0.034996665         -0.226281101 </span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt;      log(Y1):log(Y2)      log(Y1):log(W1)      log(Y1):log(W2) </span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt;         -0.057609631         -0.020462972         -0.005676474 </span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt;      log(Y2):log(W1)      log(Y2):log(W2)      log(W1):log(W2) </span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co">#&gt;          0.013639077          0.018840745         -0.154925076 </span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept) Skew_v0i_(Intercept) </span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co">#&gt;         -3.687587268          3.000000000 </span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co">#&gt; -------------- Regression with skewed errors: ---------------</span></span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="co">#&gt; Iteration   0 (at starting values):       log likelihood = 5.146960520337</span></span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a><span class="co">#&gt; Iteration   1 (hessian is provided,   1 in total):   log likelihood = 201.5619797261</span></span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="co">#&gt; Iteration   2 (hessian is provided,   2 in total):   log likelihood = 218.5157385369</span></span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="co">#&gt; Iteration   3 (hessian is provided,   3 in total):   log likelihood = 219.8304053615</span></span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="co">#&gt; Iteration   4 (hessian is provided,   4 in total):   log likelihood = 221.1570395072</span></span>
+<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a><span class="co">#&gt; Iteration   5 (hessian is provided,   5 in total):   log likelihood = 221.4173977326</span></span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a><span class="co">#&gt; Iteration   6 (hessian is provided,   6 in total):   log likelihood = 221.45910305</span></span>
+<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a><span class="co">#&gt; Iteration   7 (hessian is provided,   7 in total):   log likelihood = 221.4742381631</span></span>
+<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a><span class="co">#&gt; Iteration   8 (hessian is provided,   8 in total):   log likelihood = 221.4742892007</span></span>
+<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a><span class="co">#&gt; Iteration   9 (hessian is provided,   9 in total):   log likelihood = 221.4772909678</span></span>
+<span id="cb6-37"><a href="#cb6-37" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-38"><a href="#cb6-38" tabindex="-1"></a><span class="co">#&gt; Convergence given g inv(H) g&#39; = 1.147956e-05 &lt; lmtol</span></span>
+<span id="cb6-39"><a href="#cb6-39" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-40"><a href="#cb6-40" tabindex="-1"></a><span class="co">#&gt; Final log likelihood = 221.4772909678</span></span>
+<span id="cb6-41"><a href="#cb6-41" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-42"><a href="#cb6-42" tabindex="-1"></a><span class="co">#&gt;                         Estimate     Std.Err  Z value    Pr(&gt;z)    </span></span>
+<span id="cb6-43"><a href="#cb6-43" tabindex="-1"></a><span class="co">#&gt; (Intercept)          -5.88439482  3.00884171  -1.9557  0.050500 .  </span></span>
+<span id="cb6-44"><a href="#cb6-44" tabindex="-1"></a><span class="co">#&gt; log(Y1)               0.43986913  0.15724371   2.7974  0.005152 ** </span></span>
+<span id="cb6-45"><a href="#cb6-45" tabindex="-1"></a><span class="co">#&gt; log(Y2)               0.50497847  0.27574767   1.8313  0.067055 .  </span></span>
+<span id="cb6-46"><a href="#cb6-46" tabindex="-1"></a><span class="co">#&gt; log(W1)               0.54680112  0.27757332   1.9699  0.048846 *  </span></span>
+<span id="cb6-47"><a href="#cb6-47" tabindex="-1"></a><span class="co">#&gt; log(W2)               1.62221319  1.19336826   1.3594  0.174034    </span></span>
+<span id="cb6-48"><a href="#cb6-48" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(Y1)^2)    0.04152960  0.00579831   7.1624 7.929e-13 ***</span></span>
+<span id="cb6-49"><a href="#cb6-49" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(Y2)^2)    0.06775246  0.02251267   3.0095  0.002617 ** </span></span>
+<span id="cb6-50"><a href="#cb6-50" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(W1)^2)    0.03985513  0.02624261   1.5187  0.128833    </span></span>
+<span id="cb6-51"><a href="#cb6-51" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(W2)^2)   -0.28421570  0.32037935  -0.8871  0.375013    </span></span>
+<span id="cb6-52"><a href="#cb6-52" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(Y2)      -0.05595449  0.01162258  -4.8143 1.477e-06 ***</span></span>
+<span id="cb6-53"><a href="#cb6-53" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(W1)      -0.02195339  0.01251279  -1.7545  0.079349 .  </span></span>
+<span id="cb6-54"><a href="#cb6-54" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(W2)       0.00032291  0.04106930   0.0079  0.993727    </span></span>
+<span id="cb6-55"><a href="#cb6-55" tabindex="-1"></a><span class="co">#&gt; log(Y2):log(W1)       0.01294569  0.01577160   0.8208  0.411747    </span></span>
+<span id="cb6-56"><a href="#cb6-56" tabindex="-1"></a><span class="co">#&gt; log(Y2):log(W2)       0.00975499  0.05798118   0.1682  0.866391    </span></span>
+<span id="cb6-57"><a href="#cb6-57" tabindex="-1"></a><span class="co">#&gt; log(W1):log(W2)      -0.15803381  0.06620501  -2.3870  0.016985 *  </span></span>
+<span id="cb6-58"><a href="#cb6-58" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept) -3.01076847  0.11366937 -26.4871 &lt; 2.2e-16 ***</span></span>
+<span id="cb6-59"><a href="#cb6-59" tabindex="-1"></a><span class="co">#&gt; Skew_v0i_(Intercept)  1.86603587  0.32264117   5.7836 7.311e-09 ***</span></span>
+<span id="cb6-60"><a href="#cb6-60" tabindex="-1"></a><span class="co">#&gt; ---</span></span>
+<span id="cb6-61"><a href="#cb6-61" tabindex="-1"></a><span class="co">#&gt; Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</span></span>
+<span id="cb6-62"><a href="#cb6-62" tabindex="-1"></a><span class="co">#&gt; _____________________________________________________________</span></span>
+<span id="cb6-63"><a href="#cb6-63" tabindex="-1"></a></span>
+<span id="cb6-64"><a href="#cb6-64" tabindex="-1"></a><span class="fu">coef</span>(m1)</span>
+<span id="cb6-65"><a href="#cb6-65" tabindex="-1"></a><span class="co">#&gt;          (Intercept)              log(Y1)              log(Y2) </span></span>
+<span id="cb6-66"><a href="#cb6-66" tabindex="-1"></a><span class="co">#&gt;         -5.884394817          0.439869125          0.504978469 </span></span>
+<span id="cb6-67"><a href="#cb6-67" tabindex="-1"></a><span class="co">#&gt;              log(W1)              log(W2)   I(0.5 * log(Y1)^2) </span></span>
+<span id="cb6-68"><a href="#cb6-68" tabindex="-1"></a><span class="co">#&gt;          0.546801118          1.622213193          0.041529597 </span></span>
+<span id="cb6-69"><a href="#cb6-69" tabindex="-1"></a><span class="co">#&gt;   I(0.5 * log(Y2)^2)   I(0.5 * log(W1)^2)   I(0.5 * log(W2)^2) </span></span>
+<span id="cb6-70"><a href="#cb6-70" tabindex="-1"></a><span class="co">#&gt;          0.067752458          0.039855132         -0.284215702 </span></span>
+<span id="cb6-71"><a href="#cb6-71" tabindex="-1"></a><span class="co">#&gt;      log(Y1):log(Y2)      log(Y1):log(W1)      log(Y1):log(W2) </span></span>
+<span id="cb6-72"><a href="#cb6-72" tabindex="-1"></a><span class="co">#&gt;         -0.055954492         -0.021953387          0.000322907 </span></span>
+<span id="cb6-73"><a href="#cb6-73" tabindex="-1"></a><span class="co">#&gt;      log(Y2):log(W1)      log(Y2):log(W2)      log(W1):log(W2) </span></span>
+<span id="cb6-74"><a href="#cb6-74" tabindex="-1"></a><span class="co">#&gt;          0.012945689          0.009754988         -0.158033814 </span></span>
+<span id="cb6-75"><a href="#cb6-75" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept) Skew_v0i_(Intercept) </span></span>
+<span id="cb6-76"><a href="#cb6-76" tabindex="-1"></a><span class="co">#&gt;         -3.010768472          1.866035868</span></span></code></pre></div>
+</div>
+<div id="heteroskedastic-with-skewed-noise" class="section level2">
+<h2>Heteroskedastic with Skewed Noise</h2>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>formSV <span class="ot">&lt;-</span> <span class="er">~</span> <span class="fu">log</span>(TA)   <span class="co"># heteroskedasticity in v</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>formSK <span class="ot">&lt;-</span> <span class="er">~</span> ER        <span class="co"># skewness driven by equity ratio</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>m2 <span class="ot">&lt;-</span> <span class="fu">snreg</span>(</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="at">formula  =</span> spe.tl,</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="at">data     =</span> banks07,</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="at">ln.var.v =</span> formSV,</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="at">skew.v   =</span> formSK</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>)</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt;  theta0:</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt;               (Intercept)                   log(Y1)                   log(Y2) </span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt;              -4.386991731               0.415874408               0.370050861 </span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt;                   log(W1)                   log(W2)        I(0.5 * log(Y1)^2) </span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt;               0.524152369               1.342097991               0.047454756 </span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt;        I(0.5 * log(Y2)^2)        I(0.5 * log(W1)^2)        I(0.5 * log(W2)^2) </span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt;               0.077484315               0.034996665              -0.226281101 </span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt;           log(Y1):log(Y2)           log(Y1):log(W1)           log(Y1):log(W2) </span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co">#&gt;              -0.057609631              -0.020462972              -0.005676474 </span></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="co">#&gt;           log(Y2):log(W1)           log(Y2):log(W2)           log(W1):log(W2) </span></span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="co">#&gt;               0.013639077               0.018840745              -0.154925076 </span></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co">#&gt;      lnVARv0i_(Intercept) lnVARv0i_lnVARv0i_log(TA)      Skew_v0i_(Intercept) </span></span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="co">#&gt;              -3.687587268               0.000000000               3.000000000 </span></span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="co">#&gt;      Skew_v0i_Skew_v0i_ER </span></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="co">#&gt;               0.000000000 </span></span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="co">#&gt; ----------------- Regression with skewed errors: -----------------</span></span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="co">#&gt; Iteration   0 (at starting values):       log likelihood = 5.146960520337</span></span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a><span class="co">#&gt; Iteration   1 (hessian is provided,   1 in total):   log likelihood = 204.6988401214</span></span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a><span class="co">#&gt; Iteration   2 (hessian is provided,   2 in total):   log likelihood = 221.6390613234</span></span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a><span class="co">#&gt; Iteration   3 (hessian is provided,   3 in total):   log likelihood = 224.8771023643</span></span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a><span class="co">#&gt; Iteration   4 (hessian is provided,   4 in total):   log likelihood = 225.6867346145</span></span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a><span class="co">#&gt; Iteration   5 (hessian is provided,   5 in total):   log likelihood = 225.9380532273</span></span>
+<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a><span class="co">#&gt; Iteration   6 (hessian is provided,   6 in total):   log likelihood = 226.0484166119</span></span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a><span class="co">#&gt; Iteration   7 (hessian is provided,   7 in total):   log likelihood = 226.0721225638</span></span>
+<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a><span class="co">#&gt; Iteration   8 (hessian is provided,   8 in total):   log likelihood = 226.0820635056</span></span>
+<span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a><span class="co">#&gt; Iteration   9 (hessian is provided,   9 in total):   log likelihood = 226.0835072457</span></span>
+<span id="cb7-39"><a href="#cb7-39" tabindex="-1"></a><span class="co">#&gt; Iteration  10 (hessian is provided,  10 in total):   log likelihood = 226.0909506421</span></span>
+<span id="cb7-40"><a href="#cb7-40" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-41"><a href="#cb7-41" tabindex="-1"></a><span class="co">#&gt; Convergence given g inv(H) g&#39; = 9.357213e-05 &lt; lmtol</span></span>
+<span id="cb7-42"><a href="#cb7-42" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-43"><a href="#cb7-43" tabindex="-1"></a><span class="co">#&gt; Final log likelihood = 226.0909506421</span></span>
+<span id="cb7-44"><a href="#cb7-44" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-45"><a href="#cb7-45" tabindex="-1"></a><span class="co">#&gt;                              Estimate     Std.Err Z value    Pr(&gt;z)    </span></span>
+<span id="cb7-46"><a href="#cb7-46" tabindex="-1"></a><span class="co">#&gt; (Intercept)               -5.71501334  2.98991742 -1.9114  0.055950 .  </span></span>
+<span id="cb7-47"><a href="#cb7-47" tabindex="-1"></a><span class="co">#&gt; log(Y1)                    0.45216186  0.15708195  2.8785  0.003996 ** </span></span>
+<span id="cb7-48"><a href="#cb7-48" tabindex="-1"></a><span class="co">#&gt; log(Y2)                    0.64671047  0.28153250  2.2971  0.021613 *  </span></span>
+<span id="cb7-49"><a href="#cb7-49" tabindex="-1"></a><span class="co">#&gt; log(W1)                    0.48917765  0.27664356  1.7683  0.077018 .  </span></span>
+<span id="cb7-50"><a href="#cb7-50" tabindex="-1"></a><span class="co">#&gt; log(W2)                    1.15530138  1.17400483  0.9841  0.325082    </span></span>
+<span id="cb7-51"><a href="#cb7-51" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(Y1)^2)         0.04070906  0.00590546  6.8935 5.445e-12 ***</span></span>
+<span id="cb7-52"><a href="#cb7-52" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(Y2)^2)         0.06170967  0.02265802  2.7235  0.006459 ** </span></span>
+<span id="cb7-53"><a href="#cb7-53" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(W1)^2)         0.04271441  0.02667730  1.6012  0.109343    </span></span>
+<span id="cb7-54"><a href="#cb7-54" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(W2)^2)        -0.15999322  0.31994376 -0.5001  0.617028    </span></span>
+<span id="cb7-55"><a href="#cb7-55" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(Y2)           -0.05757860  0.01197968 -4.8064 1.537e-06 ***</span></span>
+<span id="cb7-56"><a href="#cb7-56" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(W1)           -0.01887894  0.01276125 -1.4794  0.139035    </span></span>
+<span id="cb7-57"><a href="#cb7-57" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(W2)            0.00165155  0.04117676  0.0401  0.968006    </span></span>
+<span id="cb7-58"><a href="#cb7-58" tabindex="-1"></a><span class="co">#&gt; log(Y2):log(W1)            0.00516054  0.01583258  0.3259  0.744467    </span></span>
+<span id="cb7-59"><a href="#cb7-59" tabindex="-1"></a><span class="co">#&gt; log(Y2):log(W2)           -0.00022261  0.05922730 -0.0038  0.997001    </span></span>
+<span id="cb7-60"><a href="#cb7-60" tabindex="-1"></a><span class="co">#&gt; log(W1):log(W2)           -0.13107647  0.06626509 -1.9781  0.047922 *  </span></span>
+<span id="cb7-61"><a href="#cb7-61" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept)      -0.89452888  1.03829604 -0.8615  0.388943    </span></span>
+<span id="cb7-62"><a href="#cb7-62" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_lnVARv0i_log(TA) -0.17730037  0.08736480 -2.0294  0.042415 *  </span></span>
+<span id="cb7-63"><a href="#cb7-63" tabindex="-1"></a><span class="co">#&gt; Skew_v0i_(Intercept)       3.10567750  0.76059557  4.0832 4.442e-05 ***</span></span>
+<span id="cb7-64"><a href="#cb7-64" tabindex="-1"></a><span class="co">#&gt; Skew_v0i_Skew_v0i_ER      -9.55208958  4.87607389 -1.9590  0.050116 .  </span></span>
+<span id="cb7-65"><a href="#cb7-65" tabindex="-1"></a><span class="co">#&gt; ---</span></span>
+<span id="cb7-66"><a href="#cb7-66" tabindex="-1"></a><span class="co">#&gt; Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</span></span>
+<span id="cb7-67"><a href="#cb7-67" tabindex="-1"></a><span class="co">#&gt; __________________________________________________________________</span></span>
+<span id="cb7-68"><a href="#cb7-68" tabindex="-1"></a></span>
+<span id="cb7-69"><a href="#cb7-69" tabindex="-1"></a><span class="fu">coef</span>(m2)</span>
+<span id="cb7-70"><a href="#cb7-70" tabindex="-1"></a><span class="co">#&gt;               (Intercept)                   log(Y1)                   log(Y2) </span></span>
+<span id="cb7-71"><a href="#cb7-71" tabindex="-1"></a><span class="co">#&gt;             -5.7150133374              0.4521618623              0.6467104718 </span></span>
+<span id="cb7-72"><a href="#cb7-72" tabindex="-1"></a><span class="co">#&gt;                   log(W1)                   log(W2)        I(0.5 * log(Y1)^2) </span></span>
+<span id="cb7-73"><a href="#cb7-73" tabindex="-1"></a><span class="co">#&gt;              0.4891776489              1.1553013814              0.0407090640 </span></span>
+<span id="cb7-74"><a href="#cb7-74" tabindex="-1"></a><span class="co">#&gt;        I(0.5 * log(Y2)^2)        I(0.5 * log(W1)^2)        I(0.5 * log(W2)^2) </span></span>
+<span id="cb7-75"><a href="#cb7-75" tabindex="-1"></a><span class="co">#&gt;              0.0617096653              0.0427144069             -0.1599932243 </span></span>
+<span id="cb7-76"><a href="#cb7-76" tabindex="-1"></a><span class="co">#&gt;           log(Y1):log(Y2)           log(Y1):log(W1)           log(Y1):log(W2) </span></span>
+<span id="cb7-77"><a href="#cb7-77" tabindex="-1"></a><span class="co">#&gt;             -0.0575785975             -0.0188789363              0.0016515541 </span></span>
+<span id="cb7-78"><a href="#cb7-78" tabindex="-1"></a><span class="co">#&gt;           log(Y2):log(W1)           log(Y2):log(W2)           log(W1):log(W2) </span></span>
+<span id="cb7-79"><a href="#cb7-79" tabindex="-1"></a><span class="co">#&gt;              0.0051605363             -0.0002226092             -0.1310764688 </span></span>
+<span id="cb7-80"><a href="#cb7-80" tabindex="-1"></a><span class="co">#&gt;      lnVARv0i_(Intercept) lnVARv0i_lnVARv0i_log(TA)      Skew_v0i_(Intercept) </span></span>
+<span id="cb7-81"><a href="#cb7-81" tabindex="-1"></a><span class="co">#&gt;             -0.8945288842             -0.1773003673              3.1056774984 </span></span>
+<span id="cb7-82"><a href="#cb7-82" tabindex="-1"></a><span class="co">#&gt;      Skew_v0i_Skew_v0i_ER </span></span>
+<span id="cb7-83"><a href="#cb7-83" tabindex="-1"></a><span class="co">#&gt;             -9.5520895773</span></span></code></pre></div>
+</div>
+</div>
+<div id="stochastic-frontier-model-with-skew-normal-errors" class="section level1">
+<h1>Stochastic Frontier Model with Skew-Normal Errors</h1>
+<p>The <code>snsf()</code> function performs maximum likelihood
+estimation of parameters and technical or cost efficiencies in a
+Stochastic Frontier Model with a skew-normally distributed error
+term.</p>
+<div id="homoskedastic-and-symmetric-model-1" class="section level2">
+<h2>Homoskedastic and Symmetric Model</h2>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>myprod <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>formSV <span class="ot">&lt;-</span> <span class="cn">NULL</span>   <span class="co"># variance equation</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>formSK <span class="ot">&lt;-</span> <span class="cn">NULL</span>   <span class="co"># skewness equation</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>m1 <span class="ot">&lt;-</span> <span class="fu">snsf</span>(</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>  <span class="at">formula  =</span> spe.tl,</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>  <span class="at">data     =</span> banks07,</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  <span class="at">prod     =</span> myprod,</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  <span class="at">ln.var.v =</span> formSV,</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>  <span class="at">skew.v   =</span> formSK</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>)</span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="co">#&gt; -------------- Regression with skewed errors: ---------------</span></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a><span class="co">#&gt; initial  value -105.392823 </span></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="co">#&gt; iter   2 value -105.561746</span></span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a><span class="co">#&gt; iter   3 value -105.568000</span></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">#&gt; iter   4 value -105.836407</span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt; iter   5 value -106.255928</span></span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a><span class="co">#&gt; iter   6 value -107.989401</span></span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a><span class="co">#&gt; iter   7 value -129.390401</span></span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a><span class="co">#&gt; iter   8 value -148.614164</span></span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a><span class="co">#&gt; iter   8 value -148.614164</span></span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a><span class="co">#&gt; iter   9 value -148.627674</span></span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a><span class="co">#&gt; iter  10 value -148.628304</span></span>
+<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a><span class="co">#&gt; iter  10 value -148.628304</span></span>
+<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a><span class="co">#&gt; iter  10 value -148.628304</span></span>
+<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a><span class="co">#&gt; final  value -148.628304 </span></span>
+<span id="cb8-30"><a href="#cb8-30" tabindex="-1"></a><span class="co">#&gt; converged</span></span>
+<span id="cb8-31"><a href="#cb8-31" tabindex="-1"></a><span class="co">#&gt;                         Estimate     Std.Err  Z value    Pr(&gt;z)    </span></span>
+<span id="cb8-32"><a href="#cb8-32" tabindex="-1"></a><span class="co">#&gt; X(Intercept)         -4.40500089  3.80254827  -1.1584  0.246687    </span></span>
+<span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a><span class="co">#&gt; Xlog(Y1)              0.45706967  0.18307828   2.4966  0.012540 *  </span></span>
+<span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a><span class="co">#&gt; Xlog(Y2)              0.31560584  0.33532057   0.9412  0.346599    </span></span>
+<span id="cb8-35"><a href="#cb8-35" tabindex="-1"></a><span class="co">#&gt; Xlog(W1)              0.48827077  0.38637994   1.2637  0.206335    </span></span>
+<span id="cb8-36"><a href="#cb8-36" tabindex="-1"></a><span class="co">#&gt; Xlog(W2)              1.29215252  1.70829901   0.7564  0.449411    </span></span>
+<span id="cb8-37"><a href="#cb8-37" tabindex="-1"></a><span class="co">#&gt; XI(0.5 * log(Y1)^2)   0.06252731  0.00718640   8.7008 &lt; 2.2e-16 ***</span></span>
+<span id="cb8-38"><a href="#cb8-38" tabindex="-1"></a><span class="co">#&gt; XI(0.5 * log(Y2)^2)   0.19680294  0.03130033   6.2876 3.225e-10 ***</span></span>
+<span id="cb8-39"><a href="#cb8-39" tabindex="-1"></a><span class="co">#&gt; XI(0.5 * log(W1)^2)   0.05041646  0.03723206   1.3541  0.175700    </span></span>
+<span id="cb8-40"><a href="#cb8-40" tabindex="-1"></a><span class="co">#&gt; XI(0.5 * log(W2)^2)  -0.28522159  0.46697561  -0.6108  0.541342    </span></span>
+<span id="cb8-41"><a href="#cb8-41" tabindex="-1"></a><span class="co">#&gt; Xlog(Y1):log(Y2)     -0.14258698  0.00610987 -23.3372 &lt; 2.2e-16 ***</span></span>
+<span id="cb8-42"><a href="#cb8-42" tabindex="-1"></a><span class="co">#&gt; Xlog(Y1):log(W1)      0.00029592  0.01705705   0.0173  0.986158    </span></span>
+<span id="cb8-43"><a href="#cb8-43" tabindex="-1"></a><span class="co">#&gt; Xlog(Y1):log(W2)      0.17610934  0.05558196   3.1685  0.001532 ** </span></span>
+<span id="cb8-44"><a href="#cb8-44" tabindex="-1"></a><span class="co">#&gt; Xlog(Y2):log(W1)      0.01454480  0.02162340   0.6726  0.501175    </span></span>
+<span id="cb8-45"><a href="#cb8-45" tabindex="-1"></a><span class="co">#&gt; Xlog(Y2):log(W2)     -0.09354141  0.07710129  -1.2132  0.225043    </span></span>
+<span id="cb8-46"><a href="#cb8-46" tabindex="-1"></a><span class="co">#&gt; Xlog(W1):log(W2)     -0.21197450  0.09475124  -2.2372  0.025275 *  </span></span>
+<span id="cb8-47"><a href="#cb8-47" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept) -2.66540968  0.11013951 -24.2003 &lt; 2.2e-16 ***</span></span>
+<span id="cb8-48"><a href="#cb8-48" tabindex="-1"></a><span class="co">#&gt; Skew_v0i_(Intercept)  0.98854923  0.03434255  28.7850 &lt; 2.2e-16 ***</span></span>
+<span id="cb8-49"><a href="#cb8-49" tabindex="-1"></a><span class="co">#&gt; sv                    0.26376286  0.00766250  34.4226 &lt; 2.2e-16 ***</span></span>
+<span id="cb8-50"><a href="#cb8-50" tabindex="-1"></a><span class="co">#&gt; ---</span></span>
+<span id="cb8-51"><a href="#cb8-51" tabindex="-1"></a><span class="co">#&gt; Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</span></span>
+<span id="cb8-52"><a href="#cb8-52" tabindex="-1"></a><span class="co">#&gt; _____________________________________________________________</span></span>
+<span id="cb8-53"><a href="#cb8-53" tabindex="-1"></a><span class="co">#&gt;  theta0:</span></span>
+<span id="cb8-54"><a href="#cb8-54" tabindex="-1"></a><span class="co">#&gt;          (Intercept)              log(Y1)              log(Y2) </span></span>
+<span id="cb8-55"><a href="#cb8-55" tabindex="-1"></a><span class="co">#&gt;        -4.4050008900         0.4570696682         0.3156058426 </span></span>
+<span id="cb8-56"><a href="#cb8-56" tabindex="-1"></a><span class="co">#&gt;              log(W1)              log(W2)   I(0.5 * log(Y1)^2) </span></span>
+<span id="cb8-57"><a href="#cb8-57" tabindex="-1"></a><span class="co">#&gt;         0.4882707672         1.2921525200         0.0625273146 </span></span>
+<span id="cb8-58"><a href="#cb8-58" tabindex="-1"></a><span class="co">#&gt;   I(0.5 * log(Y2)^2)   I(0.5 * log(W1)^2)   I(0.5 * log(W2)^2) </span></span>
+<span id="cb8-59"><a href="#cb8-59" tabindex="-1"></a><span class="co">#&gt;         0.1968029394         0.0504164557        -0.2852215911 </span></span>
+<span id="cb8-60"><a href="#cb8-60" tabindex="-1"></a><span class="co">#&gt;      log(Y1):log(Y2)      log(Y1):log(W1)      log(Y1):log(W2) </span></span>
+<span id="cb8-61"><a href="#cb8-61" tabindex="-1"></a><span class="co">#&gt;        -0.1425869800         0.0002959179         0.1761093362 </span></span>
+<span id="cb8-62"><a href="#cb8-62" tabindex="-1"></a><span class="co">#&gt;      log(Y2):log(W1)      log(Y2):log(W2)      log(W1):log(W2) </span></span>
+<span id="cb8-63"><a href="#cb8-63" tabindex="-1"></a><span class="co">#&gt;         0.0145448021        -0.0935414140        -0.2119744969 </span></span>
+<span id="cb8-64"><a href="#cb8-64" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept) Skew_v0i_(Intercept) lnVARu0i_(Intercept) </span></span>
+<span id="cb8-65"><a href="#cb8-65" tabindex="-1"></a><span class="co">#&gt;        -4.2020745955         0.3982617494        -4.5984104618 </span></span>
+<span id="cb8-66"><a href="#cb8-66" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-67"><a href="#cb8-67" tabindex="-1"></a><span class="co">#&gt; ---------------------- The main model: ----------------------</span></span>
+<span id="cb8-68"><a href="#cb8-68" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-69"><a href="#cb8-69" tabindex="-1"></a><span class="co">#&gt; Iteration   0 (at starting values):       log likelihood = 21.64346032248</span></span>
+<span id="cb8-70"><a href="#cb8-70" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-71"><a href="#cb8-71" tabindex="-1"></a><span class="co">#&gt; Iteration   1 (hessian is provided,   1 in total):   log likelihood = 186.4880063145</span></span>
+<span id="cb8-72"><a href="#cb8-72" tabindex="-1"></a><span class="co">#&gt; Iteration   2 (hessian is provided,   2 in total):   log likelihood = 214.3430643968</span></span>
+<span id="cb8-73"><a href="#cb8-73" tabindex="-1"></a><span class="co">#&gt; Iteration   3 (hessian is provided,   3 in total):   log likelihood = 220.957921695</span></span>
+<span id="cb8-74"><a href="#cb8-74" tabindex="-1"></a><span class="co">#&gt; Iteration   4 (hessian is provided,   4 in total):   log likelihood = 223.1040419712</span></span>
+<span id="cb8-75"><a href="#cb8-75" tabindex="-1"></a><span class="co">#&gt; Iteration   5 (hessian is provided,   5 in total):   log likelihood = 224.3725358921</span></span>
+<span id="cb8-76"><a href="#cb8-76" tabindex="-1"></a><span class="co">#&gt; Iteration   6 (hessian is provided,   6 in total):   log likelihood = 224.6133195507</span></span>
+<span id="cb8-77"><a href="#cb8-77" tabindex="-1"></a><span class="co">#&gt; Iteration   7 (hessian is provided,   7 in total):   log likelihood = 224.7096271178</span></span>
+<span id="cb8-78"><a href="#cb8-78" tabindex="-1"></a><span class="co">#&gt; Iteration   8 (hessian is provided,   8 in total):   log likelihood = 224.7298349674</span></span>
+<span id="cb8-79"><a href="#cb8-79" tabindex="-1"></a><span class="co">#&gt; Iteration   9 (hessian is provided,   9 in total):   log likelihood = 224.8005650898</span></span>
+<span id="cb8-80"><a href="#cb8-80" tabindex="-1"></a><span class="co">#&gt; Iteration  10 (hessian is provided,  10 in total):   log likelihood = 224.8011109934</span></span>
+<span id="cb8-81"><a href="#cb8-81" tabindex="-1"></a><span class="co">#&gt; Iteration  11 (hessian is provided,  11 in total):   log likelihood = 224.8019248405</span></span>
+<span id="cb8-82"><a href="#cb8-82" tabindex="-1"></a><span class="co">#&gt; Iteration  12 (hessian is provided,  12 in total):   log likelihood = 224.8021079368</span></span>
+<span id="cb8-83"><a href="#cb8-83" tabindex="-1"></a><span class="co">#&gt; Iteration  13 (hessian is provided,  13 in total):   log likelihood = 224.8054321542</span></span>
+<span id="cb8-84"><a href="#cb8-84" tabindex="-1"></a><span class="co">#&gt; Iteration  14 (hessian is provided,  14 in total):   log likelihood = 224.8420044777</span></span>
+<span id="cb8-85"><a href="#cb8-85" tabindex="-1"></a><span class="co">#&gt; Iteration  15 (hessian is provided,  15 in total):   log likelihood = 225.4135588864</span></span>
+<span id="cb8-86"><a href="#cb8-86" tabindex="-1"></a><span class="co">#&gt; Iteration  16 (hessian is provided,  16 in total):   log likelihood = 225.5282232035</span></span>
+<span id="cb8-87"><a href="#cb8-87" tabindex="-1"></a><span class="co">#&gt; Iteration  17 (hessian is provided,  17 in total):   log likelihood = 225.533351752</span></span>
+<span id="cb8-88"><a href="#cb8-88" tabindex="-1"></a><span class="co">#&gt; Iteration  18 (hessian is provided,  18 in total):   log likelihood = 225.5368333384</span></span>
+<span id="cb8-89"><a href="#cb8-89" tabindex="-1"></a><span class="co">#&gt; Iteration  19 (hessian is provided,  19 in total):   log likelihood = 225.5371105355</span></span>
+<span id="cb8-90"><a href="#cb8-90" tabindex="-1"></a><span class="co">#&gt; Iteration  20 (hessian is provided,  20 in total):   log likelihood = 225.539300346</span></span>
+<span id="cb8-91"><a href="#cb8-91" tabindex="-1"></a><span class="co">#&gt; Iteration  21 (hessian is provided,  21 in total):   log likelihood = 225.539317247</span></span>
+<span id="cb8-92"><a href="#cb8-92" tabindex="-1"></a><span class="co">#&gt; Iteration  22 (hessian is provided,  22 in total):   log likelihood = 225.539324279</span></span>
+<span id="cb8-93"><a href="#cb8-93" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-94"><a href="#cb8-94" tabindex="-1"></a><span class="co">#&gt; Convergence given g inv(H) g&#39; = 1.027857e-06 &lt; lmtol</span></span>
+<span id="cb8-95"><a href="#cb8-95" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-96"><a href="#cb8-96" tabindex="-1"></a><span class="co">#&gt; Final log likelihood = 225.539324279</span></span>
+<span id="cb8-97"><a href="#cb8-97" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-98"><a href="#cb8-98" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-99"><a href="#cb8-99" tabindex="-1"></a><span class="co">#&gt; Log likelihood maximization completed in</span></span>
+<span id="cb8-100"><a href="#cb8-100" tabindex="-1"></a><span class="co">#&gt; 0.182 seconds</span></span>
+<span id="cb8-101"><a href="#cb8-101" tabindex="-1"></a><span class="co">#&gt; _____________________________________________________________</span></span>
+<span id="cb8-102"><a href="#cb8-102" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-103"><a href="#cb8-103" tabindex="-1"></a><span class="co">#&gt; Cross-sectional stochastic (cost) frontier model</span></span>
+<span id="cb8-104"><a href="#cb8-104" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-105"><a href="#cb8-105" tabindex="-1"></a><span class="co">#&gt; Distributional assumptions</span></span>
+<span id="cb8-106"><a href="#cb8-106" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-107"><a href="#cb8-107" tabindex="-1"></a><span class="co">#&gt;   Component      Distribution Assumption   </span></span>
+<span id="cb8-108"><a href="#cb8-108" tabindex="-1"></a><span class="co">#&gt; 1 Random noise:  skew normal  homoskedastic</span></span>
+<span id="cb8-109"><a href="#cb8-109" tabindex="-1"></a><span class="co">#&gt; 2 Inefficiency:  exponential  homoskedastic</span></span>
+<span id="cb8-110"><a href="#cb8-110" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-111"><a href="#cb8-111" tabindex="-1"></a><span class="co">#&gt; Number of observations = 500</span></span>
+<span id="cb8-112"><a href="#cb8-112" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-113"><a href="#cb8-113" tabindex="-1"></a><span class="co">#&gt; -------------------- Estimation results: --------------------</span></span>
+<span id="cb8-114"><a href="#cb8-114" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-115"><a href="#cb8-115" tabindex="-1"></a><span class="co">#&gt;                           Coef.        SE       z       P&gt;|z|</span></span>
+<span id="cb8-116"><a href="#cb8-116" tabindex="-1"></a><span class="co">#&gt; _____________________________________________________________</span></span>
+<span id="cb8-117"><a href="#cb8-117" tabindex="-1"></a><span class="co">#&gt; Frontier</span></span>
+<span id="cb8-118"><a href="#cb8-118" tabindex="-1"></a><span class="co">#&gt;                                                                  </span></span>
+<span id="cb8-119"><a href="#cb8-119" tabindex="-1"></a><span class="co">#&gt; (Intercept)             -6.3606     3.0602   -2.08     0.0377 *  </span></span>
+<span id="cb8-120"><a href="#cb8-120" tabindex="-1"></a><span class="co">#&gt; log(Y1)                  0.4425     0.1767    2.50     0.0123 *  </span></span>
+<span id="cb8-121"><a href="#cb8-121" tabindex="-1"></a><span class="co">#&gt; log(Y2)                  0.5660     0.2753    2.06     0.0398 *  </span></span>
+<span id="cb8-122"><a href="#cb8-122" tabindex="-1"></a><span class="co">#&gt; log(W1)                  0.4983     0.2835    1.76     0.0788 .  </span></span>
+<span id="cb8-123"><a href="#cb8-123" tabindex="-1"></a><span class="co">#&gt; log(W2)                  1.6557     1.1889    1.39     0.1637    </span></span>
+<span id="cb8-124"><a href="#cb8-124" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(Y1)^2)       0.0449     0.0066    6.76     0.0000 ***</span></span>
+<span id="cb8-125"><a href="#cb8-125" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(Y2)^2)       0.0650     0.0222    2.93     0.0034 ** </span></span>
+<span id="cb8-126"><a href="#cb8-126" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(W1)^2)       0.0363     0.0258    1.41     0.1597    </span></span>
+<span id="cb8-127"><a href="#cb8-127" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(W2)^2)      -0.3099     0.3170   -0.98     0.3283    </span></span>
+<span id="cb8-128"><a href="#cb8-128" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(Y2)         -0.0586     0.0117   -4.99     0.0000 ***</span></span>
+<span id="cb8-129"><a href="#cb8-129" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(W1)         -0.0227     0.0127   -1.78     0.0750 .  </span></span>
+<span id="cb8-130"><a href="#cb8-130" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(W2)         -0.0006     0.0420   -0.01     0.9895    </span></span>
+<span id="cb8-131"><a href="#cb8-131" tabindex="-1"></a><span class="co">#&gt; log(Y2):log(W1)          0.0117     0.0152    0.77     0.4393    </span></span>
+<span id="cb8-132"><a href="#cb8-132" tabindex="-1"></a><span class="co">#&gt; log(Y2):log(W2)          0.0106     0.0563    0.19     0.8505    </span></span>
+<span id="cb8-133"><a href="#cb8-133" tabindex="-1"></a><span class="co">#&gt; log(W1):log(W2)         -0.1375     0.0682   -2.02     0.0438 *  </span></span>
+<span id="cb8-134"><a href="#cb8-134" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------------------</span></span>
+<span id="cb8-135"><a href="#cb8-135" tabindex="-1"></a><span class="co">#&gt; Variance of the random noise component: log(sigma_v^2)</span></span>
+<span id="cb8-136"><a href="#cb8-136" tabindex="-1"></a><span class="co">#&gt;                                                                  </span></span>
+<span id="cb8-137"><a href="#cb8-137" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept)    -3.8207     0.2255  -16.94     0.0000 ***</span></span>
+<span id="cb8-138"><a href="#cb8-138" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------------------</span></span>
+<span id="cb8-139"><a href="#cb8-139" tabindex="-1"></a><span class="co">#&gt; Skewness of the random noise component: `alpha`</span></span>
+<span id="cb8-140"><a href="#cb8-140" tabindex="-1"></a><span class="co">#&gt;                                                                  </span></span>
+<span id="cb8-141"><a href="#cb8-141" tabindex="-1"></a><span class="co">#&gt; Skew_v0i_(Intercept)    -1.5007     0.8755   -1.71     0.0865 .  </span></span>
+<span id="cb8-142"><a href="#cb8-142" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------------------</span></span>
+<span id="cb8-143"><a href="#cb8-143" tabindex="-1"></a><span class="co">#&gt; Inefficiency component: log(sigma_u^2)</span></span>
+<span id="cb8-144"><a href="#cb8-144" tabindex="-1"></a><span class="co">#&gt;                                                                  </span></span>
+<span id="cb8-145"><a href="#cb8-145" tabindex="-1"></a><span class="co">#&gt; lnVARu0i_(Intercept)    -4.3422     0.2398  -18.11     0.0000 ***</span></span>
+<span id="cb8-146"><a href="#cb8-146" tabindex="-1"></a><span class="co">#&gt; _____________________________________________________________</span></span>
+<span id="cb8-147"><a href="#cb8-147" tabindex="-1"></a><span class="co">#&gt; Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</span></span>
+<span id="cb8-148"><a href="#cb8-148" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-149"><a href="#cb8-149" tabindex="-1"></a><span class="co">#&gt; --------------- Summary of cost efficiencies: ---------------</span></span>
+<span id="cb8-150"><a href="#cb8-150" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-151"><a href="#cb8-151" tabindex="-1"></a><span class="co">#&gt;                 JLMS:= exp(-E[ui|ei])</span></span>
+<span id="cb8-152"><a href="#cb8-152" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-153"><a href="#cb8-153" tabindex="-1"></a><span class="co">#&gt;       TE_JLMS</span></span>
+<span id="cb8-154"><a href="#cb8-154" tabindex="-1"></a><span class="co">#&gt; Obs       500</span></span>
+<span id="cb8-155"><a href="#cb8-155" tabindex="-1"></a><span class="co">#&gt; NAs         0</span></span>
+<span id="cb8-156"><a href="#cb8-156" tabindex="-1"></a><span class="co">#&gt; Mean   0.8955</span></span>
+<span id="cb8-157"><a href="#cb8-157" tabindex="-1"></a><span class="co">#&gt; StDev  0.0715</span></span>
+<span id="cb8-158"><a href="#cb8-158" tabindex="-1"></a><span class="co">#&gt; IQR    0.0645</span></span>
+<span id="cb8-159"><a href="#cb8-159" tabindex="-1"></a><span class="co">#&gt; Min    0.4559</span></span>
+<span id="cb8-160"><a href="#cb8-160" tabindex="-1"></a><span class="co">#&gt; 5%     0.7420</span></span>
+<span id="cb8-161"><a href="#cb8-161" tabindex="-1"></a><span class="co">#&gt; 10%    0.7959</span></span>
+<span id="cb8-162"><a href="#cb8-162" tabindex="-1"></a><span class="co">#&gt; 25%    0.8780</span></span>
+<span id="cb8-163"><a href="#cb8-163" tabindex="-1"></a><span class="co">#&gt; 50%    0.9208</span></span>
+<span id="cb8-164"><a href="#cb8-164" tabindex="-1"></a><span class="co">#&gt; 75%    0.9425</span></span>
+<span id="cb8-165"><a href="#cb8-165" tabindex="-1"></a><span class="co">#&gt; 90%    0.9520</span></span>
+<span id="cb8-166"><a href="#cb8-166" tabindex="-1"></a><span class="co">#&gt; Max    0.9691</span></span>
+<span id="cb8-167"><a href="#cb8-167" tabindex="-1"></a></span>
+<span id="cb8-168"><a href="#cb8-168" tabindex="-1"></a><span class="fu">coef</span>(m1)</span>
+<span id="cb8-169"><a href="#cb8-169" tabindex="-1"></a><span class="co">#&gt;          (Intercept)              log(Y1)              log(Y2) </span></span>
+<span id="cb8-170"><a href="#cb8-170" tabindex="-1"></a><span class="co">#&gt;        -6.3606134654         0.4425312174         0.5660453675 </span></span>
+<span id="cb8-171"><a href="#cb8-171" tabindex="-1"></a><span class="co">#&gt;              log(W1)              log(W2)   I(0.5 * log(Y1)^2) </span></span>
+<span id="cb8-172"><a href="#cb8-172" tabindex="-1"></a><span class="co">#&gt;         0.4983319531         1.6557355502         0.0448519992 </span></span>
+<span id="cb8-173"><a href="#cb8-173" tabindex="-1"></a><span class="co">#&gt;   I(0.5 * log(Y2)^2)   I(0.5 * log(W1)^2)   I(0.5 * log(W2)^2) </span></span>
+<span id="cb8-174"><a href="#cb8-174" tabindex="-1"></a><span class="co">#&gt;         0.0649995029         0.0362747554        -0.3099280819 </span></span>
+<span id="cb8-175"><a href="#cb8-175" tabindex="-1"></a><span class="co">#&gt;      log(Y1):log(Y2)      log(Y1):log(W1)      log(Y1):log(W2) </span></span>
+<span id="cb8-176"><a href="#cb8-176" tabindex="-1"></a><span class="co">#&gt;        -0.0586056701        -0.0226917826        -0.0005509121 </span></span>
+<span id="cb8-177"><a href="#cb8-177" tabindex="-1"></a><span class="co">#&gt;      log(Y2):log(W1)      log(Y2):log(W2)      log(W1):log(W2) </span></span>
+<span id="cb8-178"><a href="#cb8-178" tabindex="-1"></a><span class="co">#&gt;         0.0117430476         0.0106095399        -0.1375404433 </span></span>
+<span id="cb8-179"><a href="#cb8-179" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept) Skew_v0i_(Intercept) lnVARu0i_(Intercept) </span></span>
+<span id="cb8-180"><a href="#cb8-180" tabindex="-1"></a><span class="co">#&gt;        -3.8206601915        -1.5006628040        -4.3422317628</span></span></code></pre></div>
+</div>
+<div id="heteroskedastic-with-skewed-noise-1" class="section level2">
+<h2>Heteroskedastic with Skewed Noise</h2>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>formSV <span class="ot">&lt;-</span> <span class="er">~</span> <span class="fu">log</span>(TA)      <span class="co"># heteroskedastic variance</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>formSK <span class="ot">&lt;-</span> <span class="er">~</span> ER           <span class="co"># skewness driver</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>m2 <span class="ot">&lt;-</span> <span class="fu">snsf</span>(</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="at">formula  =</span> spe.tl,</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  <span class="at">data     =</span> banks07,</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  <span class="at">prod     =</span> myprod,</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  <span class="at">ln.var.v =</span> formSV,</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>  <span class="at">skew.v   =</span> formSK</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>)</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; -------------- Regression with skewed errors: ---------------</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; initial  value -105.392823 </span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; iter   2 value -105.561746</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt; iter   3 value -105.568000</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt; iter   4 value -105.836407</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt; iter   5 value -106.255928</span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt; iter   6 value -107.989401</span></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co">#&gt; iter   7 value -129.390401</span></span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co">#&gt; iter   8 value -148.614164</span></span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co">#&gt; iter   8 value -148.614164</span></span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a><span class="co">#&gt; iter   9 value -148.627674</span></span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="co">#&gt; iter  10 value -148.628304</span></span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a><span class="co">#&gt; iter  10 value -148.628304</span></span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a><span class="co">#&gt; iter  10 value -148.628304</span></span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a><span class="co">#&gt; final  value -148.628304 </span></span>
+<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a><span class="co">#&gt; converged</span></span>
+<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a><span class="co">#&gt;                         Estimate     Std.Err  Z value    Pr(&gt;z)    </span></span>
+<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a><span class="co">#&gt; X(Intercept)         -4.40500089  3.80254827  -1.1584  0.246687    </span></span>
+<span id="cb9-31"><a href="#cb9-31" tabindex="-1"></a><span class="co">#&gt; Xlog(Y1)              0.45706967  0.18307828   2.4966  0.012540 *  </span></span>
+<span id="cb9-32"><a href="#cb9-32" tabindex="-1"></a><span class="co">#&gt; Xlog(Y2)              0.31560584  0.33532057   0.9412  0.346599    </span></span>
+<span id="cb9-33"><a href="#cb9-33" tabindex="-1"></a><span class="co">#&gt; Xlog(W1)              0.48827077  0.38637994   1.2637  0.206335    </span></span>
+<span id="cb9-34"><a href="#cb9-34" tabindex="-1"></a><span class="co">#&gt; Xlog(W2)              1.29215252  1.70829901   0.7564  0.449411    </span></span>
+<span id="cb9-35"><a href="#cb9-35" tabindex="-1"></a><span class="co">#&gt; XI(0.5 * log(Y1)^2)   0.06252731  0.00718640   8.7008 &lt; 2.2e-16 ***</span></span>
+<span id="cb9-36"><a href="#cb9-36" tabindex="-1"></a><span class="co">#&gt; XI(0.5 * log(Y2)^2)   0.19680294  0.03130033   6.2876 3.225e-10 ***</span></span>
+<span id="cb9-37"><a href="#cb9-37" tabindex="-1"></a><span class="co">#&gt; XI(0.5 * log(W1)^2)   0.05041646  0.03723206   1.3541  0.175700    </span></span>
+<span id="cb9-38"><a href="#cb9-38" tabindex="-1"></a><span class="co">#&gt; XI(0.5 * log(W2)^2)  -0.28522159  0.46697561  -0.6108  0.541342    </span></span>
+<span id="cb9-39"><a href="#cb9-39" tabindex="-1"></a><span class="co">#&gt; Xlog(Y1):log(Y2)     -0.14258698  0.00610987 -23.3372 &lt; 2.2e-16 ***</span></span>
+<span id="cb9-40"><a href="#cb9-40" tabindex="-1"></a><span class="co">#&gt; Xlog(Y1):log(W1)      0.00029592  0.01705705   0.0173  0.986158    </span></span>
+<span id="cb9-41"><a href="#cb9-41" tabindex="-1"></a><span class="co">#&gt; Xlog(Y1):log(W2)      0.17610934  0.05558196   3.1685  0.001532 ** </span></span>
+<span id="cb9-42"><a href="#cb9-42" tabindex="-1"></a><span class="co">#&gt; Xlog(Y2):log(W1)      0.01454480  0.02162340   0.6726  0.501175    </span></span>
+<span id="cb9-43"><a href="#cb9-43" tabindex="-1"></a><span class="co">#&gt; Xlog(Y2):log(W2)     -0.09354141  0.07710129  -1.2132  0.225043    </span></span>
+<span id="cb9-44"><a href="#cb9-44" tabindex="-1"></a><span class="co">#&gt; Xlog(W1):log(W2)     -0.21197450  0.09475124  -2.2372  0.025275 *  </span></span>
+<span id="cb9-45"><a href="#cb9-45" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept) -2.66540968  0.11013951 -24.2003 &lt; 2.2e-16 ***</span></span>
+<span id="cb9-46"><a href="#cb9-46" tabindex="-1"></a><span class="co">#&gt; Skew_v0i_(Intercept)  0.98854923  0.03434255  28.7850 &lt; 2.2e-16 ***</span></span>
+<span id="cb9-47"><a href="#cb9-47" tabindex="-1"></a><span class="co">#&gt; sv                    0.26376286  0.00766250  34.4226 &lt; 2.2e-16 ***</span></span>
+<span id="cb9-48"><a href="#cb9-48" tabindex="-1"></a><span class="co">#&gt; ---</span></span>
+<span id="cb9-49"><a href="#cb9-49" tabindex="-1"></a><span class="co">#&gt; Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</span></span>
+<span id="cb9-50"><a href="#cb9-50" tabindex="-1"></a><span class="co">#&gt; _____________________________________________________________</span></span>
+<span id="cb9-51"><a href="#cb9-51" tabindex="-1"></a><span class="co">#&gt;  theta0:</span></span>
+<span id="cb9-52"><a href="#cb9-52" tabindex="-1"></a><span class="co">#&gt;          (Intercept)              log(Y1)              log(Y2) </span></span>
+<span id="cb9-53"><a href="#cb9-53" tabindex="-1"></a><span class="co">#&gt;        -4.405001e+00         4.570697e-01         3.156058e-01 </span></span>
+<span id="cb9-54"><a href="#cb9-54" tabindex="-1"></a><span class="co">#&gt;              log(W1)              log(W2)   I(0.5 * log(Y1)^2) </span></span>
+<span id="cb9-55"><a href="#cb9-55" tabindex="-1"></a><span class="co">#&gt;         4.882708e-01         1.292153e+00         6.252731e-02 </span></span>
+<span id="cb9-56"><a href="#cb9-56" tabindex="-1"></a><span class="co">#&gt;   I(0.5 * log(Y2)^2)   I(0.5 * log(W1)^2)   I(0.5 * log(W2)^2) </span></span>
+<span id="cb9-57"><a href="#cb9-57" tabindex="-1"></a><span class="co">#&gt;         1.968029e-01         5.041646e-02        -2.852216e-01 </span></span>
+<span id="cb9-58"><a href="#cb9-58" tabindex="-1"></a><span class="co">#&gt;      log(Y1):log(Y2)      log(Y1):log(W1)      log(Y1):log(W2) </span></span>
+<span id="cb9-59"><a href="#cb9-59" tabindex="-1"></a><span class="co">#&gt;        -1.425870e-01         2.959179e-04         1.761093e-01 </span></span>
+<span id="cb9-60"><a href="#cb9-60" tabindex="-1"></a><span class="co">#&gt;      log(Y2):log(W1)      log(Y2):log(W2)      log(W1):log(W2) </span></span>
+<span id="cb9-61"><a href="#cb9-61" tabindex="-1"></a><span class="co">#&gt;         1.454480e-02        -9.354141e-02        -2.119745e-01 </span></span>
+<span id="cb9-62"><a href="#cb9-62" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept)     lnVARv0i_log(TA) Skew_v0i_(Intercept) </span></span>
+<span id="cb9-63"><a href="#cb9-63" tabindex="-1"></a><span class="co">#&gt;        -4.202075e+00         2.212626e-16         3.982617e-01 </span></span>
+<span id="cb9-64"><a href="#cb9-64" tabindex="-1"></a><span class="co">#&gt;          Skew_v0i_ER lnVARu0i_(Intercept) </span></span>
+<span id="cb9-65"><a href="#cb9-65" tabindex="-1"></a><span class="co">#&gt;         0.000000e+00        -4.598410e+00 </span></span>
+<span id="cb9-66"><a href="#cb9-66" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-67"><a href="#cb9-67" tabindex="-1"></a><span class="co">#&gt; ---------------------- The main model: ----------------------</span></span>
+<span id="cb9-68"><a href="#cb9-68" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-69"><a href="#cb9-69" tabindex="-1"></a><span class="co">#&gt; Iteration   0 (at starting values):       log likelihood = 21.64346032248</span></span>
+<span id="cb9-70"><a href="#cb9-70" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-71"><a href="#cb9-71" tabindex="-1"></a><span class="co">#&gt; Iteration   1 (hessian is provided,   1 in total):   log likelihood = 133.2018982456</span></span>
+<span id="cb9-72"><a href="#cb9-72" tabindex="-1"></a><span class="co">#&gt; Iteration   2 (hessian is provided,   2 in total):   log likelihood = 183.2824024606</span></span>
+<span id="cb9-73"><a href="#cb9-73" tabindex="-1"></a><span class="co">#&gt; Iteration   3 (hessian is provided,   3 in total):   log likelihood = 214.7412845581</span></span>
+<span id="cb9-74"><a href="#cb9-74" tabindex="-1"></a><span class="co">#&gt; Iteration   4 (hessian is provided,   4 in total):   log likelihood = 223.1763227676</span></span>
+<span id="cb9-75"><a href="#cb9-75" tabindex="-1"></a><span class="co">#&gt; Iteration   5 (hessian is provided,   5 in total):   log likelihood = 226.655477596</span></span>
+<span id="cb9-76"><a href="#cb9-76" tabindex="-1"></a><span class="co">#&gt; Iteration   6 (hessian is provided,   6 in total):   log likelihood = 226.7105002202</span></span>
+<span id="cb9-77"><a href="#cb9-77" tabindex="-1"></a><span class="co">#&gt; Iteration   7 (hessian is provided,   7 in total):   log likelihood = 226.8074129256</span></span>
+<span id="cb9-78"><a href="#cb9-78" tabindex="-1"></a><span class="co">#&gt; Iteration   8 (hessian is provided,   8 in total):   log likelihood = 226.8082101988</span></span>
+<span id="cb9-79"><a href="#cb9-79" tabindex="-1"></a><span class="co">#&gt; Iteration   9 (hessian is provided,   9 in total):   log likelihood = 226.8082151929</span></span>
+<span id="cb9-80"><a href="#cb9-80" tabindex="-1"></a><span class="co">#&gt; Iteration  10 (hessian is provided,  10 in total):   log likelihood = 226.808224564</span></span>
+<span id="cb9-81"><a href="#cb9-81" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-82"><a href="#cb9-82" tabindex="-1"></a><span class="co">#&gt; Convergence given g inv(H) g&#39; = 2.529443e-06 &lt; lmtol</span></span>
+<span id="cb9-83"><a href="#cb9-83" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-84"><a href="#cb9-84" tabindex="-1"></a><span class="co">#&gt; Final log likelihood = 226.808224564</span></span>
+<span id="cb9-85"><a href="#cb9-85" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-86"><a href="#cb9-86" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-87"><a href="#cb9-87" tabindex="-1"></a><span class="co">#&gt; Log likelihood maximization completed in</span></span>
+<span id="cb9-88"><a href="#cb9-88" tabindex="-1"></a><span class="co">#&gt; 0.103 seconds</span></span>
+<span id="cb9-89"><a href="#cb9-89" tabindex="-1"></a><span class="co">#&gt; _____________________________________________________________</span></span>
+<span id="cb9-90"><a href="#cb9-90" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-91"><a href="#cb9-91" tabindex="-1"></a><span class="co">#&gt; Cross-sectional stochastic (cost) frontier model</span></span>
+<span id="cb9-92"><a href="#cb9-92" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-93"><a href="#cb9-93" tabindex="-1"></a><span class="co">#&gt; Distributional assumptions</span></span>
+<span id="cb9-94"><a href="#cb9-94" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-95"><a href="#cb9-95" tabindex="-1"></a><span class="co">#&gt;   Component      Distribution Assumption     </span></span>
+<span id="cb9-96"><a href="#cb9-96" tabindex="-1"></a><span class="co">#&gt; 1 Random noise:  skew normal  heteroskedastic</span></span>
+<span id="cb9-97"><a href="#cb9-97" tabindex="-1"></a><span class="co">#&gt; 2 Inefficiency:  exponential  homoskedastic  </span></span>
+<span id="cb9-98"><a href="#cb9-98" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-99"><a href="#cb9-99" tabindex="-1"></a><span class="co">#&gt; Number of observations = 500</span></span>
+<span id="cb9-100"><a href="#cb9-100" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-101"><a href="#cb9-101" tabindex="-1"></a><span class="co">#&gt; -------------------- Estimation results: --------------------</span></span>
+<span id="cb9-102"><a href="#cb9-102" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-103"><a href="#cb9-103" tabindex="-1"></a><span class="co">#&gt;                           Coef.        SE       z       P&gt;|z|</span></span>
+<span id="cb9-104"><a href="#cb9-104" tabindex="-1"></a><span class="co">#&gt; _____________________________________________________________</span></span>
+<span id="cb9-105"><a href="#cb9-105" tabindex="-1"></a><span class="co">#&gt; Frontier</span></span>
+<span id="cb9-106"><a href="#cb9-106" tabindex="-1"></a><span class="co">#&gt;                                                                  </span></span>
+<span id="cb9-107"><a href="#cb9-107" tabindex="-1"></a><span class="co">#&gt; (Intercept)             -5.9441     3.0205   -1.97     0.0491 *  </span></span>
+<span id="cb9-108"><a href="#cb9-108" tabindex="-1"></a><span class="co">#&gt; log(Y1)                  0.4589     0.1647    2.79     0.0053 ** </span></span>
+<span id="cb9-109"><a href="#cb9-109" tabindex="-1"></a><span class="co">#&gt; log(Y2)                  0.6135     0.2820    2.18     0.0296 *  </span></span>
+<span id="cb9-110"><a href="#cb9-110" tabindex="-1"></a><span class="co">#&gt; log(W1)                  0.5168     0.2747    1.88     0.0599 .  </span></span>
+<span id="cb9-111"><a href="#cb9-111" tabindex="-1"></a><span class="co">#&gt; log(W2)                  1.2707     1.1934    1.06     0.2870    </span></span>
+<span id="cb9-112"><a href="#cb9-112" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(Y1)^2)       0.0414     0.0061    6.81     0.0000 ***</span></span>
+<span id="cb9-113"><a href="#cb9-113" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(Y2)^2)       0.0614     0.0226    2.72     0.0065 ** </span></span>
+<span id="cb9-114"><a href="#cb9-114" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(W1)^2)       0.0439     0.0262    1.68     0.0938 .  </span></span>
+<span id="cb9-115"><a href="#cb9-115" tabindex="-1"></a><span class="co">#&gt; I(0.5 * log(W2)^2)      -0.2078     0.3247   -0.64     0.5223    </span></span>
+<span id="cb9-116"><a href="#cb9-116" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(Y2)         -0.0575     0.0120   -4.79     0.0000 ***</span></span>
+<span id="cb9-117"><a href="#cb9-117" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(W1)         -0.0215     0.0128   -1.68     0.0927 .  </span></span>
+<span id="cb9-118"><a href="#cb9-118" tabindex="-1"></a><span class="co">#&gt; log(Y1):log(W2)          0.0000     0.0417    0.00     0.9997    </span></span>
+<span id="cb9-119"><a href="#cb9-119" tabindex="-1"></a><span class="co">#&gt; log(Y2):log(W1)          0.0068     0.0158    0.43     0.6682    </span></span>
+<span id="cb9-120"><a href="#cb9-120" tabindex="-1"></a><span class="co">#&gt; log(Y2):log(W2)          0.0086     0.0589    0.15     0.8836    </span></span>
+<span id="cb9-121"><a href="#cb9-121" tabindex="-1"></a><span class="co">#&gt; log(W1):log(W2)         -0.1368     0.0661   -2.07     0.0384 *  </span></span>
+<span id="cb9-122"><a href="#cb9-122" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------------------</span></span>
+<span id="cb9-123"><a href="#cb9-123" tabindex="-1"></a><span class="co">#&gt; Variance of the random noise component: log(sigma_v^2)</span></span>
+<span id="cb9-124"><a href="#cb9-124" tabindex="-1"></a><span class="co">#&gt;                                                                  </span></span>
+<span id="cb9-125"><a href="#cb9-125" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept)    -1.8839     1.6595   -1.14     0.2563    </span></span>
+<span id="cb9-126"><a href="#cb9-126" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_log(TA)        -0.1558     0.1328   -1.17     0.2407    </span></span>
+<span id="cb9-127"><a href="#cb9-127" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------------------</span></span>
+<span id="cb9-128"><a href="#cb9-128" tabindex="-1"></a><span class="co">#&gt; Skewness of the random noise component: `alpha`</span></span>
+<span id="cb9-129"><a href="#cb9-129" tabindex="-1"></a><span class="co">#&gt;                                                                  </span></span>
+<span id="cb9-130"><a href="#cb9-130" tabindex="-1"></a><span class="co">#&gt; Skew_v0i_(Intercept)     2.0043     1.0468    1.91     0.0555 .  </span></span>
+<span id="cb9-131"><a href="#cb9-131" tabindex="-1"></a><span class="co">#&gt; Skew_v0i_ER             -7.2632     5.0581   -1.44     0.1510    </span></span>
+<span id="cb9-132"><a href="#cb9-132" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------------------</span></span>
+<span id="cb9-133"><a href="#cb9-133" tabindex="-1"></a><span class="co">#&gt; Inefficiency component: log(sigma_u^2)</span></span>
+<span id="cb9-134"><a href="#cb9-134" tabindex="-1"></a><span class="co">#&gt;                                                                  </span></span>
+<span id="cb9-135"><a href="#cb9-135" tabindex="-1"></a><span class="co">#&gt; lnVARu0i_(Intercept)    -4.6407     0.3416  -13.58     0.0000 ***</span></span>
+<span id="cb9-136"><a href="#cb9-136" tabindex="-1"></a><span class="co">#&gt; _____________________________________________________________</span></span>
+<span id="cb9-137"><a href="#cb9-137" tabindex="-1"></a><span class="co">#&gt; Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</span></span>
+<span id="cb9-138"><a href="#cb9-138" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-139"><a href="#cb9-139" tabindex="-1"></a><span class="co">#&gt; --------------- Summary of cost efficiencies: ---------------</span></span>
+<span id="cb9-140"><a href="#cb9-140" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-141"><a href="#cb9-141" tabindex="-1"></a><span class="co">#&gt;                 JLMS:= exp(-E[ui|ei])</span></span>
+<span id="cb9-142"><a href="#cb9-142" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-143"><a href="#cb9-143" tabindex="-1"></a><span class="co">#&gt;       TE_JLMS</span></span>
+<span id="cb9-144"><a href="#cb9-144" tabindex="-1"></a><span class="co">#&gt; Obs       500</span></span>
+<span id="cb9-145"><a href="#cb9-145" tabindex="-1"></a><span class="co">#&gt; NAs         0</span></span>
+<span id="cb9-146"><a href="#cb9-146" tabindex="-1"></a><span class="co">#&gt; Mean   0.9084</span></span>
+<span id="cb9-147"><a href="#cb9-147" tabindex="-1"></a><span class="co">#&gt; StDev  0.0564</span></span>
+<span id="cb9-148"><a href="#cb9-148" tabindex="-1"></a><span class="co">#&gt; IQR    0.0547</span></span>
+<span id="cb9-149"><a href="#cb9-149" tabindex="-1"></a><span class="co">#&gt; Min    0.5206</span></span>
+<span id="cb9-150"><a href="#cb9-150" tabindex="-1"></a><span class="co">#&gt; 5%     0.8096</span></span>
+<span id="cb9-151"><a href="#cb9-151" tabindex="-1"></a><span class="co">#&gt; 10%    0.8379</span></span>
+<span id="cb9-152"><a href="#cb9-152" tabindex="-1"></a><span class="co">#&gt; 25%    0.8903</span></span>
+<span id="cb9-153"><a href="#cb9-153" tabindex="-1"></a><span class="co">#&gt; 50%    0.9241</span></span>
+<span id="cb9-154"><a href="#cb9-154" tabindex="-1"></a><span class="co">#&gt; 75%    0.9450</span></span>
+<span id="cb9-155"><a href="#cb9-155" tabindex="-1"></a><span class="co">#&gt; 90%    0.9568</span></span>
+<span id="cb9-156"><a href="#cb9-156" tabindex="-1"></a><span class="co">#&gt; Max    0.9758</span></span>
+<span id="cb9-157"><a href="#cb9-157" tabindex="-1"></a></span>
+<span id="cb9-158"><a href="#cb9-158" tabindex="-1"></a><span class="fu">coef</span>(m2)</span>
+<span id="cb9-159"><a href="#cb9-159" tabindex="-1"></a><span class="co">#&gt;          (Intercept)              log(Y1)              log(Y2) </span></span>
+<span id="cb9-160"><a href="#cb9-160" tabindex="-1"></a><span class="co">#&gt;        -5.944090e+00         4.589482e-01         6.134700e-01 </span></span>
+<span id="cb9-161"><a href="#cb9-161" tabindex="-1"></a><span class="co">#&gt;              log(W1)              log(W2)   I(0.5 * log(Y1)^2) </span></span>
+<span id="cb9-162"><a href="#cb9-162" tabindex="-1"></a><span class="co">#&gt;         5.167646e-01         1.270694e+00         4.138294e-02 </span></span>
+<span id="cb9-163"><a href="#cb9-163" tabindex="-1"></a><span class="co">#&gt;   I(0.5 * log(Y2)^2)   I(0.5 * log(W1)^2)   I(0.5 * log(W2)^2) </span></span>
+<span id="cb9-164"><a href="#cb9-164" tabindex="-1"></a><span class="co">#&gt;         6.141001e-02         4.385504e-02        -2.077538e-01 </span></span>
+<span id="cb9-165"><a href="#cb9-165" tabindex="-1"></a><span class="co">#&gt;      log(Y1):log(Y2)      log(Y1):log(W1)      log(Y1):log(W2) </span></span>
+<span id="cb9-166"><a href="#cb9-166" tabindex="-1"></a><span class="co">#&gt;        -5.745504e-02        -2.151307e-02         1.351571e-05 </span></span>
+<span id="cb9-167"><a href="#cb9-167" tabindex="-1"></a><span class="co">#&gt;      log(Y2):log(W1)      log(Y2):log(W2)      log(W1):log(W2) </span></span>
+<span id="cb9-168"><a href="#cb9-168" tabindex="-1"></a><span class="co">#&gt;         6.752251e-03         8.627646e-03        -1.368348e-01 </span></span>
+<span id="cb9-169"><a href="#cb9-169" tabindex="-1"></a><span class="co">#&gt; lnVARv0i_(Intercept)     lnVARv0i_log(TA) Skew_v0i_(Intercept) </span></span>
+<span id="cb9-170"><a href="#cb9-170" tabindex="-1"></a><span class="co">#&gt;        -1.883867e+00        -1.558322e-01         2.004266e+00 </span></span>
+<span id="cb9-171"><a href="#cb9-171" tabindex="-1"></a><span class="co">#&gt;          Skew_v0i_ER lnVARu0i_(Intercept) </span></span>
+<span id="cb9-172"><a href="#cb9-172" tabindex="-1"></a><span class="co">#&gt;        -7.263169e+00        -4.640750e+00</span></span></code></pre></div>
+</div>
+</div>
+<div id="acknowledgments" class="section level1">
+<h1>Acknowledgments</h1>
+<p>The R package <code>snreg</code> computes Owen’s <em>T</em> function
+using C code written by John Burkardt. This implementation, distributed
+under the MIT license, is publicly accessible at <a href="https://people.sc.fsu.edu/~jburkardt/c_src/owen/owen.html">https://people.sc.fsu.edu/~jburkardt/c_src/owen/owen.html</a>.</p>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+<p>Badunenko, O. and Henderson, D.J. (2023). Production analysis with
+asymmetric noise. <em>Journal of Productivity Analysis</em>, 61(1),
+1–18. <a href="https://doi.org/10.1007/s11123-023-00680-5" class="uri">https://doi.org/10.1007/s11123-023-00680-5</a></p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

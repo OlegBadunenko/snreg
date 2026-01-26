@@ -218,7 +218,7 @@
 #' # -------------------------------------------------------------
 #' formSV <- ~ log(TA)      # heteroskedastic variance
 #' formSK <- ~ ER           # skewness driver
-#' formSU <- ~ LA + ER      # inefficiency (not used by snsf if prod=FALSE)
+#' formSU <- ~ LA + ER      # inefficiency
 #'
 #' m2 <- snsf(
 #'   formula  = spe.tl,

@@ -1,6 +1,8 @@
 # Illustration
 
-## Data
+## Illustration
+
+### Data
 
 > is a data frame containing selected variables for 500 U.S. commercial
 > banks, randomly sampled from approximately 5000 banks, based on the
@@ -47,7 +49,7 @@
 #R>  6 -1.8951346 0.4073012 0.5942832
 ```
 
-## Specification
+### Specification
 
 > Define the specification (formula) that will be used:
 
@@ -59,7 +61,7 @@ spe.tl <- log(TC) ~ (log(Y1) + log(Y2) + log(W1) + log(W2))^2 +
   I(0.5 * log(W1)^2) + I(0.5 * log(W2)^2)
 ```
 
-## Linear Regression via MLE
+### Linear Regression via MLE
 
 To estimate simple OLS using MLE
 
@@ -200,7 +202,7 @@ coef(m2)
 #R>         -3.6875872440        -0.0003644791
 ```
 
-## Linear Regression with Skew-Normal Errors
+### Linear Regression with Skew-Normal Errors
 
 > `snreg` fits a linear regression model where the disturbance term
 > follows a skew-normal distribution.
@@ -376,7 +378,7 @@ coef(m2)
 #R>              -9.5520895773
 ```
 
-## Stochastic Frontier Model with a Skew-Normally Distributed Error Term
+### Stochastic Frontier Model with a Skew-Normally Distributed Error Term
 
 > `snsf` performs maximum likelihood estimation of the parameters and
 > technical or cost efficiencies in a Stochastic Frontier Model with a
@@ -748,6 +750,13 @@ coef(m2)
 #R>         -7.263169e+00        -4.640750e+00
 ```
 
-## Additional Resources
+### Additional Resources
 
-To be added
+See
+
+> Oleg Badunenko and Daniel J. Henderson (2023). “Production analysis
+> with asymmetric noise”. Journal of Productivity Analysis, 61(1), 1–18.
+> [DOI
+> ![](reference/figures/doi.png)](https://doi.org/10.1007/s11123-023-00680-5)
+
+for more details

@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Regression with Skew-Normally Distributed Error Term">
-<meta name="description" content="Models with a skew-normally distributed error term: Badunenko &amp; Henderson (2023). Production analysis with asymmetric noise. Journal of Productivity Analysis, https://doi.org/10.1007/s11123-023-00680-5">
-<meta property="og:description" content="Models with a skew-normally distributed error term: Badunenko &amp; Henderson (2023). Production analysis with asymmetric noise. Journal of Productivity Analysis, https://doi.org/10.1007/s11123-023-00680-5">
+<meta name="description" content="Models with a skew-normally distributed error term: Badunenko &amp; Henderson (2023). Production analysis with asymmetric noise. Journal of Productivity Analysis, https://doi.org/10.1007/s11123-023-00680-5.">
+<meta property="og:description" content="Models with a skew-normally distributed error term: Badunenko &amp; Henderson (2023). Production analysis with asymmetric noise. Journal of Productivity Analysis, https://doi.org/10.1007/s11123-023-00680-5.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">snreg</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,8 +58,13 @@
 <h2 id="the-framework">The framework<a class="anchor" aria-label="anchor" href="#the-framework"></a>
 </h2>
 <p>The <code>snreg</code> package implements the framework developed in</p>
-<p>Oleg Badunenko and Daniel J. Henderson (2023). “Production analysis with asymmetric noise”. Journal of Productivity Analysis, 61(1), 1–18. <a href="https://doi.org/10.1007/s11123-023-00680-5" class="external-link">DOI <img src="reference/figures/doi.png" width="12" height="12"></a></p>
-<p>R commands <code>snreg</code> and <code>snsf</code> estimate models with skew-normal errors written and maintained by Oleg Badunenko (<a href="mailto:oleg.badunenko@proton.me" class="email">oleg.badunenko@proton.me</a>).</p>
+<p>Oleg Badunenko and Daniel J. Henderson (2023). “Production analysis with asymmetric noise”. Journal of Productivity Analysis, 61(1), 1–18. <a href="https://doi.org/10.1007/s11123-023-00680-5" class="external-link">DOI <img src="reference/figures/doi.png" alt="" width="12" height="12"></a></p>
+<p>R commands <code>snreg</code> and <code>snsf</code> estimate models with skew-normal errors written and maintained by Oleg Badunenko (<a href="mailto:oleg.badunenko@brunel.ac.uk" class="email">oleg.badunenko@brunel.ac.uk</a>).</p>
+</div>
+<div class="section level2">
+<h2 id="acknowledgments">Acknowledgments<a class="anchor" aria-label="anchor" href="#acknowledgments"></a>
+</h2>
+<p>The R package <code>snreg</code> computes Owen’s <em>T</em> function using C code written by John Burkardt. This implementation, distributed under the MIT license, is publicly accessible at <a href="https://people.sc.fsu.edu/~jburkardt/c_src/owen/owen.html" class="external-link uri">https://people.sc.fsu.edu/~jburkardt/c_src/owen/owen.html</a>.</p>
 </div>
 </div>
 <div class="section level1">
@@ -72,7 +77,10 @@
 <p>Install <code>devtools</code> from CRAN (if you haven’t already):</p>
 </blockquote>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># Install only if not already installed</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"remotes"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="id_2-install-the-package-from-github">2. Install the package from GitHub<a class="anchor" aria-label="anchor" href="#id_2-install-the-package-from-github"></a>
@@ -81,8 +89,12 @@
 <p>Install the <code>snreg</code> package from GitHub. In this code, you are installing the <code>snreg</code> package created by <code>OlegBadunenko</code>.</p>
 </blockquote>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://devtools.r-lib.org/" class="external-link">devtools</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"OlegBadunenko/snreg"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># Install only if not already installed</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"snreg"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"OlegBadunenko/snreg"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span>, build_vignettes <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Package 'snreg' is already installed; skipping."</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="id_3-load-the-installed-package">3. Load the installed package<a class="anchor" aria-label="anchor" href="#id_3-load-the-installed-package"></a>
@@ -102,7 +114,7 @@
 <div class="section level2">
 <h2 id="illustration-and-uses">Illustration and Uses<a class="anchor" aria-label="anchor" href="#illustration-and-uses"></a>
 </h2>
-<p>This <a href="https://olegbadunenko.github.io/snreg/illustration.html">article</a> guides through the code and illustrates the functionality of the package using</p>
+<p>This <a href="https://olegbadunenko.github.io/snreg/articles/illustration.html">article</a> guides through the code and illustrates the functionality of the package using</p>
 <blockquote>
 <p>a subset of the banking data (<code>banks07</code>) available in the package.</p>
 </blockquote>
@@ -119,8 +131,7 @@
 <div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
-<li>file <a href="LICENSE-text.html">LICENCE</a>
-</li>
+<li><a href="https://www.r-project.org/Licenses/GPL-3" class="external-link">GPL-3</a></li>
 </ul>
 </div>
 
@@ -136,7 +147,8 @@
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>
-<a href="https://OlegBadunenko.github.io/" class="external-link">Oleg Badunenko</a> <br><small class="roles"> Maintainer </small>   </li>
+<a href="https://OlegBadunenko.github.io/" class="external-link">Oleg Badunenko</a> <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0001-7216-0861" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<li><a href="authors.html">More about authors...</a></li>
 </ul>
 </div>
 

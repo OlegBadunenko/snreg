@@ -12,7 +12,15 @@ asymmetric noise”. Journal of Productivity Analysis, 61(1), 1–18. [DOI
 ![](reference/figures/doi.png)](https://doi.org/10.1007/s11123-023-00680-5)
 
 R commands `snreg` and `snsf` estimate models with skew-normal errors
-written and maintained by Oleg Badunenko (<oleg.badunenko@proton.me>).
+written and maintained by Oleg Badunenko
+(<oleg.badunenko@brunel.ac.uk>).
+
+## Acknowledgments
+
+The R package `snreg` computes Owen’s *T* function using C code written
+by John Burkardt. This implementation, distributed under the MIT
+license, is publicly accessible at
+<https://people.sc.fsu.edu/~jburkardt/c_src/owen/owen.html>.
 
 # 📦 Installing `snreg` R Package from GitHub
 
@@ -22,7 +30,10 @@ written and maintained by Oleg Badunenko (<oleg.badunenko@proton.me>).
 
 ``` r
 
-install.packages("devtools")
+# Install only if not already installed
+if (!requireNamespace("remotes", quietly = TRUE)) {
+  install.packages("remotes")
+}
 ```
 
 ### 2. Install the package from GitHub
@@ -32,8 +43,12 @@ install.packages("devtools")
 
 ``` r
 
-library(devtools)
-install_github("OlegBadunenko/snreg")
+# Install only if not already installed
+if (!requireNamespace("snreg", quietly = TRUE)) {
+  remotes::install_github("OlegBadunenko/snreg", dependencies = TRUE, build_vignettes = FALSE)
+} else {
+  message("Package 'snreg' is already installed; skipping.")
+}
 ```
 
 ### 3. Load the installed package
@@ -54,7 +69,8 @@ library(snreg)
 
 ## Illustration and Uses
 
-This [article](https://olegbadunenko.github.io/snreg/illustration.html)
+This
+[article](https://olegbadunenko.github.io/snreg/articles/illustration.html)
 guides through the code and illustrates the functionality of the package
 using
 

@@ -1,29 +1,37 @@
+
 url: https://olegbadunenko.github.io/snreg/
+
 template:
   bootstrap: 5
   params:
     bootswatch: spacelab
+
 authors:
   Oleg Badunenko:
     href: https://OlegBadunenko.github.io/
+
 navbar:
   title: snreg
   left:
-  - text: User Guide/Illustration
-    href: illustration.html
-  - text: All functions manuals
-    href: reference/index.html
-  - text: News/Changelog
-    href: news/index.html
+    - text: User Guide/Illustration
+      href: illustration.html
+    - text: All functions manuals
+      href: reference/index.html
+    - text: News/Changelog
+      href: news/index.html
+
 articles:
-- title: User Guide / Illustration
-  desc: |
-    The article guides through the code and illustrates the functionality of the package.
-  contents: illustration
+  - title: User Guide / Illustration
+    desc: |
+      The article guides through the code and illustrates the functionality of the package.
+    contents: 
+    - illustration
+    - snreg-manual
+
 home:
   links:
-  - text: Source Code
-    href: https://github.com/OlegBadunenko/snreg
+    - text: Source Code
+      href: https://github.com/OlegBadunenko/snreg
 development:
-  mode: release
+  mode: auto
 

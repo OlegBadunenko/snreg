@@ -1,0 +1,169 @@
+---
+title: "Introduction to snreg"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to snreg}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+  
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+```{r setup}
+library(snreg)
+library(tidyverse)
+```
+
+# Overview
+
+The `snreg` package offers a set of methods for conducting regression analysis when the model errors follow a skew-normal distribution.
+
+## Framework
+
+The `snreg` package implements the framework developed in:
+  
+  Oleg Badunenko and Daniel J. Henderson (2023). "Production analysis with asymmetric noise". *Journal of Productivity Analysis*, 61(1), 1–18. [DOI](https://doi.org/10.1007/s11123-023-00680-5)
+
+# Data
+
+We illustrate the functionality using the `banks07` dataset, which contains selected variables for 500 U.S. commercial banks randomly sampled for the year 2007.
+
+**Note:** The dataset is provided solely for illustration and pedagogical purposes and is not suitable for empirical research.
+
+```{r data}
+data(banks07, package = "snreg")
+head(banks07)
+```
+
+# Model Specification
+
+Define the translog cost function specification:
+  
+```{r formula}
+spe.tl <- log(TC) ~ (log(Y1) + log(Y2) + log(W1) + log(W2))^2 +
+  I(0.5 * log(Y1)^2) + I(0.5 * log(Y2)^2) +
+  I(0.5 * log(W1)^2) + I(0.5 * log(W2)^2)
+```
+
+# Linear Regression via MLE
+
+## Homoskedastic Model
+
+```{r lmmle1}
+formSV <- NULL
+
+m1 <- lm.mle(
+  formula   = spe.tl,
+  data      = banks07,
+  ln.var.v  = formSV
+)
+
+coef(m1)
+```
+
+## Heteroskedastic Model
+
+Variance depends on total assets (TA):
+  
+```{r lmmle2}
+formSV <- ~ log(TA)
+
+m2 <- lm.mle(
+  formula   = spe.tl,
+  data      = banks07,
+  ln.var.v  = formSV
+)
+
+coef(m2)
+```
+
+# Linear Regression with Skew-Normal Errors
+
+The `snreg()` function fits a linear regression model where the disturbance term follows a skew-normal distribution.
+
+## Homoskedastic and Symmetric Model
+
+```{r snreg1}
+formSV <- NULL     # variance equation
+formSK <- NULL     # skewness equation
+
+m1 <- snreg(
+  formula  = spe.tl,
+  data     = banks07,
+  ln.var.v = formSV,
+  skew.v   = formSK
+)
+
+coef(m1)
+```
+
+## Heteroskedastic with Skewed Noise
+
+```{r snreg2}
+formSV <- ~ log(TA)   # heteroskedasticity in v
+formSK <- ~ ER        # skewness driven by equity ratio
+
+m2 <- snreg(
+  formula  = spe.tl,
+  data     = banks07,
+  ln.var.v = formSV,
+  skew.v   = formSK
+)
+
+coef(m2)
+```
+
+# Stochastic Frontier Model with Skew-Normal Errors
+
+The `snsf()` function performs maximum likelihood estimation of parameters and technical or cost efficiencies in a Stochastic Frontier Model with a skew-normally distributed error term.
+
+## Homoskedastic and Symmetric Model
+
+```{r snsf1}
+myprod <- FALSE
+
+formSV <- NULL   # variance equation
+formSK <- NULL   # skewness equation
+
+m1 <- snsf(
+  formula  = spe.tl,
+  data     = banks07,
+  prod     = myprod,
+  ln.var.v = formSV,
+  skew.v   = formSK
+)
+
+coef(m1)
+```
+
+## Heteroskedastic with Skewed Noise
+
+```{r snsf2}
+formSV <- ~ log(TA)      # heteroskedastic variance
+formSK <- ~ ER           # skewness driver
+
+m2 <- snsf(
+  formula  = spe.tl,
+  data     = banks07,
+  prod     = myprod,
+  ln.var.v = formSV,
+  skew.v   = formSK
+)
+
+coef(m2)
+```
+
+# Acknowledgments
+
+The R package `snreg` computes Owen's *T* function using C code written by John Burkardt. This implementation, distributed under the MIT license, is publicly accessible at [https://people.sc.fsu.edu/~jburkardt/c_src/owen/owen.html](https://people.sc.fsu.edu/~jburkardt/c_src/owen/owen.html).
+
+# References
+
+Badunenko, O. and Henderson, D.J. (2023). Production analysis with asymmetric noise. *Journal of Productivity Analysis*, 61(1), 1–18. https://doi.org/10.1007/s11123-023-00680-5
