@@ -2,13 +2,14 @@
 
 ## Data
 
->  is a data frame containing selected variables for 500 U.S. commercial
+> is a data frame containing selected variables for 500 U.S. commercial
 > banks, randomly sampled from approximately 5000 banks, based on the
 > dataset of Koetter et al. (2012) for year 2007. The dataset is
 > provided solely for illustration and pedagogical purposes and is not
 > suitable for empirical research.
 
 ``` r
+
   library(snreg)
   library(tidyverse)
 #R>  ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
@@ -51,6 +52,7 @@
 > Define the specification (formula) that will be used:
 
 ``` r
+
 # Translog cost function specification
 spe.tl <- log(TC) ~ (log(Y1) + log(Y2) + log(W1) + log(W2))^2 +
   I(0.5 * log(Y1)^2) + I(0.5 * log(Y2)^2) +
@@ -62,6 +64,7 @@ spe.tl <- log(TC) ~ (log(Y1) + log(Y2) + log(W1) + log(W2))^2 +
 To estimate simple OLS using MLE
 
 ``` r
+
 # -------------------------------------------------------------
 # Specification 1: homoskedastic noise (ln.var.v = NULL)
 # -------------------------------------------------------------
@@ -203,6 +206,7 @@ coef(m2)
 > follows a skew-normal distribution.
 
 ``` r
+
 # -------------------------------------------------------------
 # Specification 1: homoskedastic & symmetric noise
 # -------------------------------------------------------------
@@ -379,6 +383,7 @@ coef(m2)
 > skew-normally distributed error term.
 
 ``` r
+
 myprod <- FALSE
 
 # -------------------------------------------------------------
